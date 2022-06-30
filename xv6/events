@@ -1,0 +1,6 @@
+virtio_queue_notify
+virtio_notify
+virtio_set_status
+virtio_blk_req_complete
+virtio_blk_rw_complete
+virtio_blk_handle_write

@@ -1,0 +1,28 @@
+Build SOC with
+--------------
+- rv32i
+- CSR
+- CLIC (Timer and ecall)
+- PLIC (External UART)
+- GPIO
+- UART
+- BRAM (firmware + bootloader)
+- SRAM (software)
+
+1.	CPU with GPIO Assembler and C-runtime
+	- leds
+	- blinky (cycles CSR)
+
+2.	UART with Assembler, C-runtime
+	- hello
+	- echo
+	- buffer
+
+3.	SRAM with C-runtime
+	- load
+	- dump
+	- exec
+
+4.	CLIC and PLIC in Assembler and C-runtime
+
+5.	run UNIX V6!

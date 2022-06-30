@@ -1,0 +1,17 @@
+i_exception
+i_interrupt
+
+mie
+
+priority
+int?
+	mie? 
+		deleg?
+			U?
+			S & SIE?
+		nodeleg?
+			S|U?
+			M & MIE?
+
+
+

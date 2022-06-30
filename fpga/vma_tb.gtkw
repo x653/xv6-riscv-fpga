@@ -1,0 +1,31 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Sat Mar 12 14:05:03 2022
+[*]
+[dumpfile] "/home/micha/riscv/riscv/12_vma/vma_tb.vcd"
+[dumpfile_mtime] "Sat Mar 12 14:04:34 2022"
+[dumpfile_size] 2339
+[savefile] "/home/micha/riscv/riscv/12_vma/vma_tb.gtkw"
+[timestart] 0
+[size] 1920 959
+[pos] -1 -1
+*-1.694840 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] vma_tb.
+[sst_width] 311
+[signals_width] 184
+[sst_expanded] 1
+[sst_vpaned_height] 253
+@28
+vma_tb.VMA.i_clk
+vma_tb.VMA.i_rst
+@22
+vma_tb.VMA.i_v_addr[31:0]
+vma_tb.VMA.o_p_addr[31:0]
+@28
+vma_tb.VMA.walk1
+vma_tb.VMA.satp_mode
+vma_tb.VMA.walk2
+@29
+vma_tb.VMA.i_v_stb
+[pattern_trace] 1
+[pattern_trace] 0

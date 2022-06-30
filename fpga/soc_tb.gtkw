@@ -1,0 +1,56 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Sun May  1 08:59:00 2022
+[*]
+[dumpfile] "/home/micha/riscv/riscv/14_privileged/soc_tb.vcd"
+[dumpfile_mtime] "Sun May  1 08:57:45 2022"
+[dumpfile_size] 77826194
+[savefile] "/home/micha/riscv/riscv/14_privileged/soc_tb.gtkw"
+[timestart] 0
+[size] 1920 959
+[pos] -1 -1
+*-16.612377 12039 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] soc_tb.
+[treeopen] soc_tb.SOC.
+[treeopen] soc_tb.SOC.RV32.
+[sst_width] 311
+[signals_width] 429
+[sst_expanded] 1
+[sst_vpaned_height] 264
+@28
+soc_tb.SOC.sba_clk
+@200
+-Virtual
+@22
+soc_tb.SOC.RV32.VMA.i_v_addr[31:0]
+@28
+soc_tb.SOC.RV32.VMA.i_v_stb
+@22
+soc_tb.SOC.RV32.VMA.i_v_we[3:0]
+@28
+soc_tb.SOC.RV32.instr_Amoswap
+soc_tb.SOC.RV32.privileged_mode[1:0]
+@22
+soc_tb.SOC.RV32.csr_satp[31:0]
+soc_tb.SOC.sba_addr[31:0]
+soc_tb.SOC.sba_dat_r[31:0]
+soc_tb.SOC.sba_dat_w[31:0]
+@28
+soc_tb.SOC.sba_stb
+@29
+soc_tb.SOC.UART.tx_baud
+@28
+soc_tb.SOC.UART.o_tx
+@22
+soc_tb.SOC.sba_we[3:0]
+@28
+soc_tb.SOC.RV32.instr_FENCE
+@820
+soc_tb.SOC.UART.THR[7:0]
+@28
+soc_tb.SOC.RV32.instr_Amoswap
+soc_tb.SOC.RV32.instr_FENCE
+soc_tb.SOC.RV32.instr_SFENCE_VMA
+soc_tb.SOC.RV32.instr_Amoswap
+[pattern_trace] 1
+[pattern_trace] 0

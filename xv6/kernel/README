@@ -1,0 +1,43 @@
+bio.c:
+virtio -> sd_card
+
+fs.h:
+BLOCKSIZE 1024->512
+
+main.c:
+__sync_synchronize()
+
+param.h:
+FSSIZE 1000->4000
+
+plic.c:
+remove VIRTIO_IRQ
+
+printf.c:
+locking 1->0
+
+proc.c:
+init in assembler without compressed code
+
+spinlock.c:
+__sync_synchronize()
+
+start.c:
+long -> int
+timeintervall
+
+time.c
+new?
+
+sdcard.c
+new!
+
+trap.c:
+virtio_intr
+
+uart.c:
+baud
+write(LCS,0x3)??
+
+vm.c:
+add page for sd-card

@@ -1,0 +1,10 @@
+changes sim:
+virtio: vm.c,trap.c,main.c,bio.c
+
+super block 10203040 is on block 2??
+why
+blocks are 512 byte?
+usertrap(): unexpected scause 0x00000002 pid=1
+            sepc=0x0000000c stval=0x0073489d
+panic: init exiting
+
