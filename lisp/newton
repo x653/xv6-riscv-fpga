@@ -1,0 +1,15 @@
+(define (sqrt x)
+	(fixed-point-transform (lambda (y) (- (square y) x))
+		newton-transform
+		1.0))
+(define (newton-transform g)
+	(lamda (x)
+		(- x (/ (g x) ((deriv g) x)))))
+(define (deriv g)
+	(lambda (x)
+		(/ (- (g (+ x dx)) (g x))
+			dx)))
+
+(define (square x) (* x x))
+
+(sqrt 2.0)

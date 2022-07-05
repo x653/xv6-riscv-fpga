@@ -143,11 +143,13 @@ UPROGS=\
 	$U/_stressfs\
 	$U/_uptime\
 	$U/_usertests\
-	$U/_lisp8\
+	$U/_lisp\
+	$U/_hello\
+	$U/_float\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	cp kernel/kernel xv6
-	mkfs/mkfs fs.img xv6 README $(UPROGS)
+	mkfs/mkfs fs.img xv6 README let sqrt sqrt2 $(UPROGS)
 
 -include kernel/*.d user/*.d
 

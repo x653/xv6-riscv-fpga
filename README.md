@@ -1,6 +1,6 @@
 # xv6-fpga
 
-Build and run a complete computer system build from ground up using only FOSS (free and open source hard- and software).
+Build and run a complete computer system from scratch using only FOSS (free and open source hard- and software).
 
 ## Getting started
 

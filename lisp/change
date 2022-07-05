@@ -1,0 +1,8 @@
+(define (co am) (cc am 5))
+(define (cc am ki) (cond ((= am 0) 1) ((or (< am 0) (= ki 0)) 0) (else (+ (cc am (- ki 1)) (cc (- am (fi ki)) ki)))))
+(define (fi coins) (cond ((= coins 1) 1) ((= coins 2) 5) ((= coins 3) 10) ((= coins 4) 25) ((= coins 5) 50)))
+(co 50)
+(co 60)
+(co 70)
+(co 80)
+(co 100)
