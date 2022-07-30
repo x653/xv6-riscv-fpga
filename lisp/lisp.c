@@ -2,23 +2,43 @@
 #include <stdlib.h> 
 #include <unistd.h>
 #include <string.h>
-#define MAX 0xfff
 
-#define pair unsigned int
-#define number long long
-#define float double
-#define MASK_INDEX 0x00ffffff
-#define MASK_TAG 0xff000000
-#define MASK_PAIR 0xffffffff
-#define TAG_PAIR 0x04000000
-#define TAG_INT 0x01000000
-#define TAG_FLOAT 0x08000000
-#define TAG_SYM 0x02000000
-#define TAG_MARK 0xff000000
+
+#define MAX 0xfff				//memory for pairs
+// a pair is represented by 16 bits:
+// 4 bits tag + 12 bit index
+//
+// |tttt|xxxxxxxxxxxx| tttt = tag, xxxxxxxxxxxx = index
+// |0001|xxxxxxxxxxxx| number
+// |0010|xxxxxxxxxxxx| symbol
+// |0100|xxxxxxxxxxxx| pair
+// |1000|xxxxxxxxxxxx| float
+// |1111|xxxxxxxxxxxx| marked (for garbage collector)
+
+// every pair is indexed by 12 bits and stores 32 bits
+// when it is a pair it stores 16 bits for car and 16 bits for cdr
+// when it is a symobl it holds a 32 bit address of the string
+// when it is a number it holds a 32 bit integer/float
+
+// index          | car                | cdr            |
+// xxxxxxxxxxxx   |yyyyyyyyyyyyyyyyyyyy|zzzzzzzzzzzzzzzz|
+
+#define pair unsigned int		//pair is 4 bytes
+#define number long long		//number is 8 bytes
+#define float double			//float is 8 bytes
+#define MASK_INDEX 0x00ffffff	//3 bytes for the index
+#define MASK_TAG 0xff000000		//1 byte for the tag
+#define MASK_PAIR 0xffffffff	
+#define TAG_PAIR 0x04000000		//pair
+#define TAG_INT 0x01000000		//number
+#define TAG_FLOAT 0x08000000	//float
+#define TAG_SYM 0x02000000		//symbol
+#define TAG_MARK 0xff000000		//marked for garbage collector
 
 pair apply(pair,pair);
 pair eval(pair,pair);
 void error(char*, pair);
+
 //Memory
 pair stack[MAX];	//the-stack
 pair cars1[MAX];	//the-cars
@@ -41,26 +61,27 @@ pair symbols;		//list of symbols
 pair global_env;	//global environment
 
 //elementary operation on pairs
+//selectors
 pair car(pair p){return cars[p & MASK_INDEX];}
 pair cdr(pair p){return cdrs[p & MASK_INDEX];}
 pair ncar(pair p){return ncars[p & MASK_INDEX];}
 pair ncdr(pair p){return ncdrs[p & MASK_INDEX];}
-
+//setters
 void setcar(pair p, pair x){cars[p & MASK_INDEX]=x;}
 void setcdr(pair p, pair x){cdrs[p & MASK_INDEX]=x;}
 void setncar(pair p, pair x){ncars[p & MASK_INDEX]=x;}
 void setncdr(pair p, pair x){ncdrs[p & MASK_INDEX]=x;}
-
+//get primitive data
 number getint(pair p){return (number)(car(p))<<32 | (number)cdr(p);}
 float getfloat(pair p){number n = getint(p); return *(float*)(&n);}
 char* getstr(pair p){return (char*)getint(p);}
 
-//constructor for pairs
 void checkmem(){
 	if (MAX==mfree){
 		error("out of memory!",nil);
 	}
 }
+//constructor for pairs
 pair cons(pair car, pair cdr){
 	checkmem();
 	pair p = TAG_PAIR | mfree++;
@@ -68,10 +89,12 @@ pair cons(pair car, pair cdr){
 	setcdr(p,cdr);
     return p;
 }
+//constructor for numbers
 pair consint(number n){
 	pair p=cons((pair)(n>>32),(pair)(n&(MASK_PAIR)));
     return p&MASK_INDEX | TAG_INT;
 }
+//constructor for floats
 pair consfloat(float x){
     checkmem();
 	pair p = consint(*(number*)(&x));
@@ -83,18 +106,19 @@ pair conssym(char* s){
 	pair p=consint((number)ss);
     return p&MASK_INDEX | TAG_SYM;
 }
-//test type of pair, these function return 0 (false) or 1 (true)
-int nullq(pair l){return l==nil;}
-int numq(pair p){return (p & TAG_INT);}
-int floatq(pair p){return (p & TAG_FLOAT);}
-int symq(pair p){return (p & TAG_SYM);}
-int pairq(pair p){return (p & TAG_PAIR);}
-int eqq(pair a, pair b){
+//testing pairs, these function return 0 (false) or 1 (true)
+int nullq(pair l){return l==nil;}				//nil
+int numq(pair p){return (p & TAG_INT);}			//number
+int floatq(pair p){return (p & TAG_FLOAT);}		//float
+int symq(pair p){return (p & TAG_SYM);}			//symbol
+int pairq(pair p){return (p & TAG_PAIR);}		//pair
+int eqq(pair a, pair b){						//equal
 	if (a==b) return 1;
 	if (floatq(a) && floatq(b)) return getfloat(a)==getfloat(b);
 	if (numq(a) && numq(b)) return getint(a)==getint(b);
 	return 0;
 }
+//comparing numbers and floats
 int eq(pair l){
 	if (floatq(car(l))) return (getfloat(car(l))==getfloat(car(cdr(l))));
 	return (getint(car(l))==getint(car(cdr(l))));
@@ -133,11 +157,39 @@ pair getsym(char* s){
 	symbols=append(symbols,p);
     return p;
 }
+//print pair according to type
+void print(pair p){
+	if (p==nil) printf("()");
+	else if (floatq(p)) printf("%f",getfloat(p));
+	else if (numq(p)) printf("%ld",getint(p));
+	else if (symq(p)) printf("%s",getstr(p));
+	else if ((pairq(p)) && (eqq(car(p),getsym("procedure")))) printf("(procedure)");
+	else if (pairq(p)){
+		printf("(");
+		print(car(p));
+		p=cdr(p);
+		while (pairq(p)){
+			printf(" ");
+			print(car(p));
+			p=cdr(p);
+		}
+		if (p!=nil){
+			printf(" . ");
+			print(p);
+		}
+		printf(")");
+	}
+}
+//error message
+void error(char* msg, pair arg){
+	printf("%s",msg);
+	print(arg);
+	exit(1);
+}
 
 //garbage collector
 void mark(pair p,pair n){setcar(p,TAG_MARK); setcdr(p,n);}
 int ismark(pair p){return (car(p)==TAG_MARK);}
-
 pair copy(pair x){
 		if(ismark(x)) return cdr(x);
 		pair np=(MASK_TAG & x) | nfree++;
@@ -146,7 +198,7 @@ pair copy(pair x){
 		mark(x,np);
 		return np;
 }
-
+//dispose garbage and swap free memory and used memory
 void garbage(){
 	push(symbols);
 	push(global_env);
@@ -191,6 +243,7 @@ void garbage(){
 }
 
 //internal procedures
+//add list of numbers
 pair f_add(pair l){
 	if (l==nil) return consint(0);
 	pair a=car(l);
@@ -200,7 +253,7 @@ pair f_add(pair l){
 	if (!floatq(a) && floatq(b)) return consfloat((float)getint(a)+getfloat(b));
 	return consint(getint(a)+getint(b));
 }
-
+//subtract list of numbers
 pair f_sub(pair l){
 	if (l==nil) return consint(0);
 	pair a=car(l);
@@ -214,7 +267,7 @@ pair f_sub(pair l){
 	if (!floatq(a) && floatq(b)) return consfloat((float)getint(a)-getfloat(b));
 	return consint(getint(a)-getint(b));
 }
-
+//multiply list of numbers
 pair f_mul(pair l){
 	if (l==nil) return consint(1);
 	pair a=car(l);
@@ -224,7 +277,7 @@ pair f_mul(pair l){
 	if (!floatq(a) && floatq(b)) return consfloat((float)getint(a)*getfloat(b));
 	return consint(getint(a)*getint(b));
 }
-
+//divide list of numbers
 pair f_div(pair l){
 	if (l==nil) return consint(1);
 	pair a=car(l);
@@ -234,55 +287,25 @@ pair f_div(pair l){
 	if (!floatq(a) && floatq(b)) return consfloat((float)getint(a)/getfloat(b));
 	return consint(getint(a)/getint(b));
 }
-
+//logic and list of boolean
 pair and(pair l){
 	if (l==nil) return getsym("#t");
 	if (car(l)==getsym("#f")) return getsym("#f");
 	return and(cdr(l));
 }
-
+//logic or list of boolean
 pair or(pair l){
 	if (l==nil) return getsym("#f");
 	if (car(l)==getsym("#t")) return getsym("#t");
 	return or(cdr(l));
 }
-
+//logic not boolean
 pair not(pair l){
 	if (car(l)==getsym("#t")) return getsym("#f");
 	return getsym("#t");
 }
 
-//print pair according to type
-void print(pair p){
-	if (p==nil) printf("()");
-	else if (floatq(p)) printf("%f",getfloat(p));
-	else if (numq(p)) printf("%ld",getint(p));
-	else if (symq(p)) printf("%s",getstr(p));
-	else if ((pairq(p)) && (eqq(car(p),getsym("procedure")))) printf("(procedure)");
-	else if (pairq(p)){
-		printf("(");
-		print(car(p));
-		p=cdr(p);
-		while (pairq(p)){
-			printf(" ");
-			print(car(p));
-			p=cdr(p);
-		}
-		if (p!=nil){
-			printf(" . ");
-			print(p);
-		}
-		printf(")");
-	}
-}
-
-
-void error(char* msg, pair arg){
-	printf("%s",msg);
-	print(arg);
-	exit(1);
-}
-//lookup
+//lookup returns value of symbol in specified environment
 pair lookup(pair var,pair env){
     if (env==nil){
 		error("Unbound variable ",var);
@@ -297,7 +320,7 @@ pair lookup(pair var,pair env){
     }
 	return lookup(var,cdr(env));
 }
-//set
+//set value of symbol in environment
 pair set(pair var,pair val,pair env){
     if (env==nil){
 		printf("error");
@@ -336,14 +359,16 @@ pair define(pair var,pair val,pair env){
     setcar(env,cons(vars,vals));
     return getsym("ok");
 }
-pair let2lambda(pair exp,pair env){
+//transform let expression to lambda expression
+//let is syntactic sugar for lambda...
+pair let2lambda(pair exp){
 	pair args=nil;
 	pair vals=nil;
 	pair proc = cdr(exp);
 	exp=car(exp);
 	while (exp!=nil){
 		args=append(args,car(car(exp)));
-		vals=append(vals,eval(car(cdr(car(exp))),env));
+		vals=append(vals,car(cdr(car(exp))));
 		exp=cdr(exp);
 	}
 	pair l=nil;
@@ -413,7 +438,7 @@ pair eval(pair exp,pair env){
             pair pred = eval(car(cdr(exp)),env);
 			env=pop();
 			exp=pop();
-			if (pred==getsym("#t")){
+			if (pred!=getsym("#f")){
                 pair if_con = car(cdr(cdr(exp)));
             	return eval(if_con,env);
 			}else{
@@ -422,7 +447,7 @@ pair eval(pair exp,pair env){
 			}
 		}
 		else if (eqq(sym,getsym("let"))){
-			return eval(let2lambda(cdr(exp),env),env);
+			return eval(let2lambda(cdr(exp)),env);
 		}
         //lambda
         else if (eqq(sym,getsym("lambda"))){
@@ -512,8 +537,8 @@ pair apply(pair proc,pair args){
 	else if (proc==getsym("cons")) return cons(car(args),car(cdr(args)));
 	else if (proc==getsym("car")) return car(car(args));
 	else if (proc==getsym("cdr")) return cdr(car(args));
-	else if (proc==getsym("setcar!")) {setcar(car(args),car(cdr(args)));return getsym("ok");}
-	else if (proc==getsym("setcdr!")) {setcdr(car(args),car(cdr(args)));return getsym("ok");}
+	else if (proc==getsym("set-car!")) {setcar(car(args),car(cdr(args)));return getsym("ok");}
+	else if (proc==getsym("set-cdr!")) {setcdr(car(args),car(cdr(args)));return getsym("ok");}
 	else if (proc==getsym("eval")) return eval(car(args),global_env);
 	else if (proc==getsym("display"))	{
 				print(car(args));
@@ -638,8 +663,8 @@ void init(){
 	define(getsym("cons"),getsym("cons"),global_env);
 	define(getsym("car"),getsym("car"),global_env);
 	define(getsym("cdr"),getsym("cdr"),global_env);
-	define(getsym("setcar!"),getsym("setcar!"),global_env);
-	define(getsym("setcdr!"),getsym("setcdr!"),global_env);
+	define(getsym("set-car!"),getsym("set-car!"),global_env);
+	define(getsym("set-cdr!"),getsym("set-cdr!"),global_env);
 	define(getsym("eval"),getsym("eval"),global_env);
 	define(getsym("display"),getsym("display"),global_env);
 }
@@ -655,12 +680,12 @@ void main(){
 	mfree=1;
 	symbols=nil;//symbols
 	global_env = cons(cons(nil,nil),nil);//global_env
-	char buf[512];
+	char buf[3000];
 	int n;
 	init();	
 	printf("lisp> ");
 	push(nil);
-	while((n=read(0,&buf,511))>0){
+	while((n=read(0,&buf,2999))>0){
 		buf[n]='\0';
 		repl(buf);
 	}
