@@ -1,0 +1,20 @@
+(define list (lambda x x))
+;;;SECTION 2.2.2
+(cons (list 1 2) (list 3 4))
+
+(define x (cons (list 1 2) (list 3 4)))
+(define (length x)
+	(if (null? x) 0 (+ 1 (length (cdr x)))))
+(length x)
+;: 
+(list x x)
+(length (list x x))
+
+(define (count-leaves x)
+  (cond ((null? x) 0)
+        ((not (pair? x)) 1)
+        (else (+ (count-leaves (car x))
+                 (count-leaves (cdr x))))))
+
+(count-leaves x)
+(count-leaves (list x x))

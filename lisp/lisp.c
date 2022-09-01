@@ -681,13 +681,21 @@ void main(){
 	symbols=nil;//symbols
 	global_env = cons(cons(nil,nil),nil);//global_env
 	char buf[3000];
-	int n;
+	int n=0;
+	char c;
 	init();	
 	printf("lisp> ");
 	push(nil);
-	while((n=read(0,&buf,2999))>0){
-		buf[n]='\0';
-		repl(buf);
+	while(read(0,&c,1)){
+		buf[n]=c;
+		if (n==3000) exit(1);
+		if (buf[n]=='\n') {
+			if (buf[0]!=';') {
+				buf[n+1]='\0';
+				repl(buf);
+			}
+			n=0;
+		}else n++;
 	}
 	printf("bye\n");
 	exit(0);

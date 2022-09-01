@@ -1,0 +1,33 @@
+;;;SECTION 1.2.5
+(define (remainder p q) (- p (* (/ p q) q)))
+(define (square x) (* x x))
+(define (gcd a b)
+  (if (= b 0)
+      a
+      (gcd b (remainder a b))))
+
+
+;;;SECTION 1.2.6
+
+;; prime?
+
+(define (smallest-divisor n)
+  (find-divisor n 2))
+
+(define (find-divisor n test-divisor)
+  (cond ((> (square test-divisor) n) n)
+        ((divides? test-divisor n) test-divisor)
+        (else (find-divisor n (+ test-divisor 1)))))
+
+(define (divides? a b)
+  (= (remainder b a) 0))
+
+(define (prime? n)
+  (= n (smallest-divisor n)))
+
+(define (list n m)
+	(if (= n m) '() (cons n (list (+ n 1) m) )))
+(define l (list 1 100))
+(define (map f l) (if (null? l) '() (cons (if (f (car l)) (car l) #f) (map f (cdr l)))))
+(map prime? l)
+
