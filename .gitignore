@@ -1,0 +1,7 @@
+*.o
+*.asm
+*.sym
+_*
+*.blend1
+*.out
+*.stl
