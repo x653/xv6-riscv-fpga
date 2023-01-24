@@ -8,12 +8,12 @@
 #include "spinlock.h"
 #include "riscv.h"
 #include "defs.h"
-//int n_kalloc=0;
+
 void freerange(void *pa_start, void *pa_end);
 
 extern char end[]; // first address after kernel.
                    // defined by kernel.ld.
-//extern int paging;
+
 struct run {
   struct run *next;
 };
@@ -26,7 +26,6 @@ struct {
 void
 kinit()
 {
-  //printf("kinit end=%p PHYSTOP=%p\n",end,PHYSTOP);
   initlock(&kmem.lock, "kmem");
   freerange(end, (void*)PHYSTOP);
 }
@@ -36,12 +35,11 @@ freerange(void *pa_start, void *pa_end)
 {
   char *p;
   p = (char*)PGROUNDUP((uint32)pa_start);
-  for(; p + PGSIZE <= (char*)pa_end; p += PGSIZE) {
+  for(; p + PGSIZE <= (char*)pa_end; p += PGSIZE)
     kfree(p);
-  }
 }
 
-// Free the page of physical memory pointed at by v,
+// Free the page of physical memory pointed at by pa,
 // which normally should have been returned by a
 // call to kalloc().  (The exception is when
 // initializing the allocator; see kinit above.)
@@ -71,24 +69,14 @@ void *
 kalloc(void)
 {
   struct run *r;
-  //printf("kalloc %d\n",++n_kalloc);
-	//printf("acquire %p %d %d\n",&kmem.lock,kmem.lock.locked,kmem.lock.cpu);
+
   acquire(&kmem.lock);
   r = kmem.freelist;
-	//printf("r %p\n",(int)r);
-	//printf("paging= %d\n",paging);
-  //if(paging)  printf("translate %p -> %p\n",r,kvmpa((int)r));
   if(r)
     kmem.freelist = r->next;
   release(&kmem.lock);
-	//printf("release %p\n",&kmem.lock);
-	//printf("r= %p\n",r);
-	//printf("paging= %d\n",paging);
-  //if(paging)  printf("translate %p -> %p\n",r,kvmpa((int)r));
 
-	//printf("PGSIZE= %d\n",PGSIZE);
   if(r)
     memset((char*)r, 5, PGSIZE); // fill with junk
-  //printf("kalloc return  %p\n",r);
   return (void*)r;
 }

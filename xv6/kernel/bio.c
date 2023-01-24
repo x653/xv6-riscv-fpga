@@ -22,13 +22,15 @@
 #include "defs.h"
 #include "fs.h"
 #include "buf.h"
-#include "sdcard.h"
+#include "disk.h"
+
 struct {
   struct spinlock lock;
   struct buf buf[NBUF];
 
   // Linked list of all buffers, through prev/next.
-  // head.next is most recently used.
+  // Sorted by how recently the buffer was used.
+  // head.next is most recent, head.prev is least.
   struct buf head;
 } bcache;
 
@@ -71,7 +73,8 @@ bget(uint dev, uint blockno)
     }
   }
 
-  // Not cached; recycle an unused buffer.
+  // Not cached.
+  // Recycle the least recently used (LRU) unused buffer.
   for(b = bcache.head.prev; b != &bcache.head; b = b->prev){
     if(b->refcnt == 0) {
       b->dev = dev;
@@ -90,7 +93,6 @@ bget(uint dev, uint blockno)
 struct buf*
 bread(uint dev, uint blockno)
 {
-  //printf("bread %p\n",blockno);
   struct buf *b;
 
   b = bget(dev, blockno);
@@ -99,11 +101,6 @@ bread(uint dev, uint blockno)
     //virtio_disk_rw(b, 0);
     b->valid = 1;
   }
-  //for (int i=0;i<512;i+=4){
-//	printf("%p ",*((int*)b->data+i));
-//	if ((i & 0x1c)==0x1c) printf("\n");
-//  }
-//  printf("\n");
   return b;
 }
 
@@ -111,15 +108,14 @@ bread(uint dev, uint blockno)
 void
 bwrite(struct buf *b)
 {
-  //printf("bwrite %p\n",b->blockno);
   if(!holdingsleep(&b->lock))
     panic("bwrite");
   spi_wb(b->blockno,b->data);
   //virtio_disk_rw(b, 1);
 }
 
-// release a locked buffer.
-// Move to the head of the MRU list.
+// Release a locked buffer.
+// Move to the head of the most-recently-used list.
 void
 brelse(struct buf *b)
 {

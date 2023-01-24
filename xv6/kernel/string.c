@@ -3,13 +3,11 @@
 void*
 memset(void *dst, int c, uint n)
 {
-//  printf("memset %p %d %d\n",dst,c,n);
   char *cdst = (char *) dst;
   int i;
   for(i = 0; i < n; i++){
     cdst[i] = c;
   }
-  //printf("  return %p \n",dst);
   return dst;
 }
 
@@ -35,6 +33,9 @@ memmove(void *dst, const void *src, uint n)
   const char *s;
   char *d;
 
+  if(n == 0)
+    return dst;
+  
   s = src;
   d = dst;
   if(s < d && s + n > d){

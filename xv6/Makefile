@@ -28,7 +28,7 @@ OBJS = \
   $K/sysfile.o \
   $K/kernelvec.o \
   $K/plic.o \
-  $K/sdcard.o
+  $K/disk.o
   #$K/virtio_disk.o
 
 # riscv32-unknown-elf- or riscv32-linux-gnu-

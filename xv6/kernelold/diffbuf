@@ -1,0 +1,4 @@
+10c10
+<   struct buf *qnext; // disk queue
+---
+> //  struct buf *qnext; // disk queue
