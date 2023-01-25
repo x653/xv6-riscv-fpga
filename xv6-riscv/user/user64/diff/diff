@@ -1,0 +1,1201 @@
+###############################################
+../float.c
+###############################################
+8c8
+<   if(argc < 3){
+---
+>   if(argc < 4){
+
+###############################################
+../initcode.S
+###############################################
+25c25
+< .p2align 5
+---
+> .p2align 2
+
+###############################################
+../lisp.c
+###############################################
+0a1,16
+> #include "kernel/types.h"
+> #include "kernel/stat.h"
+> #include "user/user.h"
+> #define MAX 0xfff
+> #define pair unsigned short
+> #define number int
+> #define float float
+> #define MASK_INDEX 0x0fff
+> #define MASK_TAG 0xf000
+> #define MASK_PAIR 0xffff
+> #define TAG_PAIR 0x4000
+> #define TAG_INT 0x1000
+> #define TAG_FLOAT 0x8000
+> #define TAG_SYM 0x2000
+> #define TAG_MARK 0xf000
+> /*
+4,78c20,21
+< int mem=0;
+< struct pair{
+< 	struct pair* car;
+< 	struct pair* cdr;
+< };
+< struct pair* apply(struct pair*,struct pair*);
+< struct pair* eval(struct pair*,struct pair*);
+< 
+< struct pair* global_env;
+< struct pair* null = (struct pair*)0;
+< struct pair* b_false = (struct pair*)1;
+< struct pair* b_true = (struct pair*)2;
+< struct pair* type_int = (struct pair*)3;
+< struct pair* type_str = (struct pair*)4;
+< struct pair* f_free = (struct pair*)5;
+< struct pair* f_and = (struct pair*)6;
+< struct pair* f_or = (struct pair*)7;
+< struct pair* f_not = (struct pair*)8;
+< struct pair* f_eqq = (struct pair*)9;
+< struct pair* f_pairq = (struct pair*)11;
+< struct pair* f_nullq = (struct pair*)12;
+< struct pair* f_cons = (struct pair*)14;
+< struct pair* f_car = (struct pair*)15;
+< struct pair* f_cdr = (struct pair*)16;
+< struct pair* f_eval = (struct pair*)17;
+< struct pair* f_error = (struct pair*)18;
+< 
+< struct pair* str_numberq = (struct pair*)19;
+< struct pair* str_ok = (struct pair*)20;
+< struct pair* str_unboundv = (struct pair*)21;
+< struct pair* str_unboundvset = (struct pair*)22;
+< struct pair* str_procedure = (struct pair*)23;
+< struct pair* g_mem = (struct pair*)24;
+< 
+< struct pair* cons(struct pair* car,struct pair* cdr){
+<     mem++;
+< 	struct pair* p = malloc(sizeof(struct pair));
+< 	p->car = car;
+< 	p->cdr = cdr;
+< 	return p;
+< }
+< 
+< struct pair* push(struct pair* s, struct pair* x){
+< 	return cons(x,s);
+< }
+< 
+< struct pair* pop(struct pair* q){
+<     if (q==NULL) return NULL;
+< 	struct pair* r=q->cdr;
+< 	q->cdr=NULL;
+< 	return r;
+< }
+< 
+< struct pair* append(struct pair* q, struct pair* x){
+< 	if (q==NULL) return cons(x,NULL);
+< 	q->cdr = append(q->cdr,x);
+< 	return q;
+< }
+< 
+< struct pair* char2pair(char c){
+< 	return (struct pair*)(int)c;
+< }
+< 
+< struct pair* int2pair(int c){
+< 	return cons(type_int,(struct pair*)(c));
+< }
+< 
+< struct pair* str2pair(char* s){
+< 	struct pair* p = cons(type_str,NULL);
+< 	while (*s){
+< 		p=append(p,char2pair(*s));
+< 		s++;
+< 	}
+< 	return p;
+< }
+---
+> #include <string.h>
+> #define MAX 0xfff
+80,81c23,113
+< int pair2int(struct pair* x){
+< 	if (x->car==type_int) return (int)x->cdr;
+---
+> #define pair unsigned int
+> #define number long long
+> #define float double
+> #define MASK_INDEX 0x00ffffff
+> #define MASK_TAG 0xff000000
+> #define MASK_PAIR 0xffffffff
+> #define TAG_PAIR 0x04000000
+> #define TAG_INT 0x01000000
+> #define TAG_FLOAT 0x08000000
+> #define TAG_SYM 0x02000000
+> #define TAG_MARK 0xff000000
+> */
+> 
+> pair apply(pair,pair);
+> pair eval(pair,pair);
+> 
+> //Memory
+> pair stack[MAX];	//the-stack
+> pair cars1[MAX];	//the-cars
+> pair cdrs1[MAX];	//the-cdrs
+> pair cars2[MAX];	//doubled for garbage collector
+> pair cdrs2[MAX];
+> 
+> pair* cars;			//link to working heap
+> pair* cdrs;
+> pair* ncars;		//link to free heap (for garbage collector)
+> pair* ncdrs;
+> 
+> int mfree;				//pointer to next free pair in heap: working memory
+> int nfree;				//pointer to next free pair in heap: copy memory (garbage collector)
+> int sfree=0;			//pointer to next free pair in stack
+> 
+> //global pairs
+> pair const nil=0;	//NULL
+> pair symbols;		//list of symbols
+> pair global_env;	//global environment
+> 
+> //elementary operation on pairs
+> pair car(pair p){return cars[p & MASK_INDEX];}
+> pair cdr(pair p){return cdrs[p & MASK_INDEX];}
+> pair ncar(pair p){return ncars[p & MASK_INDEX];}
+> pair ncdr(pair p){return ncdrs[p & MASK_INDEX];}
+> 
+> void setcar(pair p, pair x){cars[p & MASK_INDEX]=x;}
+> void setcdr(pair p, pair x){cdrs[p & MASK_INDEX]=x;}
+> void setncar(pair p, pair x){ncars[p & MASK_INDEX]=x;}
+> void setncdr(pair p, pair x){ncdrs[p & MASK_INDEX]=x;}
+> 
+> number getint(pair p){return (number)(car(p))<<16 | (number)cdr(p);}
+> float getfloat(pair p){number n = getint(p); return *(float*)(&n);}
+> char* getstr(pair p){return (char*)getint(p);}
+> 
+> //constructor for pairs
+> void checkmem(){
+> 	if (MAX==mfree){
+> 		printf("out of memory:\n");
+> 		exit(1);
+> 	}
+> }
+> pair cons(pair car, pair cdr){
+> 	checkmem();
+> 	pair p = TAG_PAIR | mfree++;
+>     setcar(p,car);
+> 	setcdr(p,cdr);
+>     return p;
+> }
+> pair consint(number n){
+> 	pair p=cons((pair)(n>>16),(pair)(n&(MASK_PAIR)));
+>     return (p&MASK_INDEX) | TAG_INT;
+> }
+> pair consfloat(float x){
+>     checkmem();
+> 	pair p = consint(*(number*)(&x));
+>     return (p&MASK_INDEX) | TAG_FLOAT;
+> }
+> pair conssym(char* s){
+> 	char* ss=malloc(sizeof(char)*(strlen(s)+1));
+> 	strcpy(ss,s);
+> 	pair p=consint((number)ss);
+>     return (p&MASK_INDEX) | TAG_SYM;
+> }
+> //test type of pair, these function return 0 (false) or 1 (true)
+> int nullq(pair l){return l==nil;}
+> int numq(pair p){return (p & TAG_INT);}
+> int floatq(pair p){return (p & TAG_FLOAT);}
+> int symq(pair p){return (p & TAG_SYM);}
+> int pairq(pair p){return (p & TAG_PAIR);}
+> int eqq(pair a, pair b){
+> 	if (a==b) return 1;
+> 	if (floatq(a) && floatq(b)) return getfloat(a)==getfloat(b);
+> 	if (numq(a) && numq(b)) return getint(a)==getint(b);
+84,105c116,303
+< 
+< struct pair* pairq(struct pair* p){
+< 	if((unsigned int)p<255) return b_false;
+< 	return b_true;
+< }
+< 
+< struct pair* eqq(struct pair* a, struct pair* b){
+< 	if (a==b) return b_true;
+< 	if ((pairq(a)==b_true) && (pairq(b)==b_true)){
+< 		if ((a->car==type_int)&&(b->car==type_int)){
+< 			if (a->cdr==b->cdr) return b_true;
+< 			else return b_false;
+< 		}
+< 		if ((a->car==type_str)&&(b->car==type_str)) {
+< 			while(1){
+< 				a=a->cdr;
+< 				b=b->cdr;
+< 				if ((a==NULL) && (b==NULL)) return b_true;
+< 				if ((a==NULL) || (b==NULL)) return b_false;
+< 				if ((a->car) != (b->car)) return b_false;
+< 			}
+< 		}
+---
+> int eq(pair l){
+> 	if (floatq(car(l))) return (getfloat(car(l))==getfloat(car(cdr(l))));
+> 	return (getint(car(l))==getint(car(cdr(l))));
+> }
+> int lt(pair l){
+> 	if (floatq(car(l))) return (getfloat(car(l))<getfloat(car(cdr(l))));
+> 	return (getint(car(l))<getint(car(cdr(l))));
+> }
+> int gt(pair l){
+> 	if (floatq(car(l))) return (getfloat(car(l))>getfloat(car(cdr(l))));
+> 	return (getint(car(l))>getint(car(cdr(l))));
+> }
+> 
+> //list operation
+> void push(pair s){if (sfree==MAX) printf("error stackoverflow"); stack[sfree++]=s;}
+> pair pop(){return stack[--sfree];}
+> pair top(){return stack[sfree-1];}
+> pair append(pair q, pair x){
+> 	if (q==nil) return cons(x,nil);
+> 	push(q);
+> 	while(cdr(q)!=nil) q=cdr(q);
+> 	setcdr(q,cons(x,nil));
+> 	return pop();
+> }
+> 
+> //get symbol from list of constructed symbols
+> pair getsym(char* s){
+> 	pair sym = symbols;
+> 	while (sym!=nil){
+> 		pair c = car(sym);
+> 		char* ss = getstr(c);
+> 		if (strcmp(s,ss)==0) return c;
+> 		sym=cdr(sym);
+> 	}
+>     pair p = conssym(s);
+> 	symbols=append(symbols,p);
+>     return p;
+> }
+> 
+> //garbage collector
+> void mark(pair p,pair n){setcar(p,TAG_MARK); setcdr(p,n);}
+> int ismark(pair p){return (car(p)==TAG_MARK);}
+> 
+> pair copy(pair x){
+> 		if(ismark(x)) return cdr(x);
+> 		pair np=(MASK_TAG & x) | nfree++;
+> 		setncar(np,car(x));
+> 		setncdr(np,cdr(x));
+> 		mark(x,np);
+> 		return np;
+> }
+> 
+> void garbage(){
+> 	push(symbols);
+> 	push(global_env);
+> 	if(cars==cars1) ncars=cars2;
+> 	else ncars=cars1;
+> 	if(cdrs==cdrs1) ncdrs=cdrs2;
+> 	else ncdrs=cdrs1;
+> 	for (int i=0;i<MAX;i++){
+> 		ncars[i]=0;
+> 		ncdrs[i]=0;
+> 	}
+> 	nfree=1;
+> 	int nscan=1;
+> 	for (int i=0;i<sfree;i++){
+> 		pair x=stack[i];
+> 		if(pairq(x)) stack[i] = copy(x);
+> 	}	
+> 	while(nscan<nfree){
+> 		pair xcar=ncar(nscan);
+> 		pair xcdr=ncdr(nscan);
+> 		if (pairq(xcar)) setncar(nscan,copy(xcar));
+> 		if (pairq(xcdr)) setncdr(nscan,copy(xcdr));
+> 		nscan++;
+> 	}
+> 	nscan--;
+> 	while (nscan>0){
+> 		pair xcar=ncar(nscan);
+> 		pair xcdr=ncdr(nscan);
+> 		if((xcar!=nil) && (!pairq(xcar))) setncar(nscan,copy(xcar));
+> 		if((xcdr!=nil) && (!pairq(xcdr))) setncdr(nscan,copy(xcdr));
+> 		nscan--;	
+> 	}
+> 	for (int i=0;i<sfree;i++){
+> 		pair x=stack[i];
+> 		if((x!=nil) && (!pairq(x))) stack[i]=copy(x);
+> 	}
+> 	cars=ncars;
+> 	cdrs=ncdrs;	
+> 	mfree=nfree;
+> 	global_env=pop();
+> 	symbols=pop();
+> }
+> 
+> //internal procedures
+> pair f_add(pair l){
+> 	if (l==nil) return consint(0);
+> 	pair a=car(l);
+> 	pair b=f_add(cdr(l));
+> 	if (floatq(a) && floatq(b)) return consfloat(getfloat(a)+getfloat(b));
+> 	if (floatq(a) && !floatq(b)) return consfloat(getfloat(a)+(float)getint(b));
+> 	if (!floatq(a) && floatq(b)) return consfloat((float)getint(a)+getfloat(b));
+> 	return consint(getint(a)+getint(b));
+> }
+> 
+> pair f_sub(pair l){
+> 	if (l==nil) return consint(0);
+> 	pair a=car(l);
+> 	if (cdr(l)==nil){
+> 		if (floatq(a)) return consfloat(-getfloat(a));
+> 		else return consint(-getint(car(l)));	
+> 	}
+> 	pair b=f_add(cdr(l));
+> 	if (floatq(a) && floatq(b)) return consfloat(getfloat(a)-getfloat(b));
+> 	if (floatq(a) && !floatq(b)) return consfloat(getfloat(a)-(float)getint(b));
+> 	if (!floatq(a) && floatq(b)) return consfloat((float)getint(a)-getfloat(b));
+> 	return consint(getint(a)-getint(b));
+> }
+> 
+> pair f_mul(pair l){
+> 	if (l==nil) return consint(1);
+> 	pair a=car(l);
+> 	pair b=f_mul(cdr(l));
+> 	if (floatq(a) && floatq(b)) return consfloat(getfloat(a)*getfloat(b));
+> 	if (floatq(a) && !floatq(b)) return consfloat(getfloat(a)*(float)getint(b));
+> 	if (!floatq(a) && floatq(b)) return consfloat((float)getint(a)*getfloat(b));
+> 	return consint(getint(a)*getint(b));
+> }
+> 
+> pair f_div(pair l){
+> 	if (l==nil) return consint(1);
+> 	pair a=car(l);
+> 	pair b=f_mul(cdr(l));
+> 	if (floatq(a) && floatq(b)) return consfloat(getfloat(a)/getfloat(b));
+> 	if (floatq(a) && !floatq(b)) return consfloat(getfloat(a)/(float)getint(b));
+> 	if (!floatq(a) && floatq(b)) return consfloat((float)getint(a)/getfloat(b));
+> 	return consint(getint(a)/getint(b));
+> }
+> 
+> pair and(pair l){
+> 	if (l==nil) return getsym("#t");
+> 	if (car(l)==getsym("#f")) return getsym("#f");
+> 	return and(cdr(l));
+> }
+> 
+> pair or(pair l){
+> 	if (l==nil) return getsym("#f");
+> 	if (car(l)==getsym("#t")) return getsym("#t");
+> 	return or(cdr(l));
+> }
+> 
+> pair not(pair l){
+> 	if (car(l)==getsym("#t")) return getsym("#f");
+> 	return getsym("#t");
+> }
+> 
+> //print pair according to type
+> void print(pair p){
+> 	if (p==nil) printf("()");
+> 	else if (floatq(p)){
+> 		float a = getfloat(p);
+> 		printf("%d.",(number)a);
+> 		a=a-(number)a;
+> 		for (int i=0;i<6;i++){
+> 			a=a*10;
+> 			printf("%d",(number)a);
+> 			a=a-(number)a;
+> 		}
+> 	}
+> 
+> 	else if (numq(p)) printf("%d",getint(p));
+> 	else if (symq(p)) printf("%s",getstr(p));
+> 	else if ((pairq(p)) && (eqq(car(p),getsym("procedure")))) printf("(procedure)");
+> 	else if (pairq(p)){
+> 		printf("(");
+> 		print(car(p));
+> 		p=cdr(p);
+> 		while (pairq(p)){
+> 			printf(" ");
+> 			print(car(p));
+> 			p=cdr(p);
+> 		}
+> 		if (p!=nil){
+> 			printf(" . ");
+> 			print(p);
+> 		}
+> 		printf(")");
+107d304
+< 	return b_false;
+110,141c307,312
+< void print(struct pair* p){
+< 	//printf("pair %d pair? %d car %d cdr %d\n",p,pairq(p),p->car,p->cdr);
+< 	if (p==NULL) printf("()");
+< 	else if (p==b_true) printf("#t");
+< 	else if (p==b_false) printf("#f");
+< 	else if (p==str_numberq) printf("Number?: ");
+< 	else if (p==str_ok) printf("ok");
+<     else if (pairq(p)==b_false) printf("%s",(char*)(&p));//printf("%c",(unsigned int)p);
+< 	else if (p->car==type_int) printf("%d",(int)p->cdr);
+< 	else if (p->car==type_str) {
+< 		p=p->cdr;
+< 		while(p!=NULL){
+< 			printf("%s",(char*)(&(p->car)));
+< 			//printf("%c",(unsigned int)p->car);
+< 			p=p->cdr;
+< 		}
+< 	}
+< 	else if (p->car==str_procedure) printf("procedure");
+< 	else {
+< 		printf("(");
+< 		print(p->car);
+< 		p = p->cdr;
+< 		while (pairq(p)==b_true){
+<            	printf(" ");
+< 			print(p->car);
+<             p = p->cdr;
+< 		}
+<         if (p!=NULL){
+<         	printf(" . ");
+<             print(p);
+< 		}
+<         printf(")");
+---
+> //lookup
+> pair lookup(pair var,pair env){
+>     if (env==nil){
+> 		printf("lookup error");
+> 		print(var);
+> 		exit(1);
+143,216c314,320
+< }
+< 
+< void error(struct pair* l){
+< 	printf("error: ");
+<     if (l==NULL){
+< 		print((struct pair*)('\n'));
+<         exit(1);
+< 	}
+<     if (pairq(l)==b_true){
+<         print(l->car);
+<         print((struct pair*)(' '));
+<         error(l->cdr);
+< 	}
+<     print(l);
+<     exit(1);
+< }
+< 
+< struct pair* tokenize(struct pair* expr){
+< 	expr=expr->cdr;
+<     struct pair* tokenlist = NULL;
+<     struct pair* token = NULL;
+<     while (expr!=NULL){
+< 		unsigned int c = (unsigned int)(expr->car);
+<         if ((c==' ') || (c=='\n')){
+< 			if (token!=NULL)
+< 				tokenlist=append(tokenlist,token);
+<             token = NULL;
+< 		}else if ((c=='(') || (c==')') || (c=='\'')){
+<             if (token!=NULL)
+< 				tokenlist=append(tokenlist,token);
+<             token = NULL;
+< 			tokenlist=append(tokenlist,char2pair(c));
+<         }else if (token==NULL){
+< 			if ((c>='0')&&(c<='9')) token = cons(type_int,(void*)(c-'0'));
+< 			else token = cons(type_str,cons(char2pair(c),NULL));
+<         }else if (token->car==type_str){
+< 			token=append(token,char2pair(c));
+< 		}else if (token->car==type_int){
+< 			if ((c>='0')&&(c<='9')) token->cdr=(void*)((int)(token->cdr)*10+c-'0');
+<             else error(cons(str_numberq,cons(token,char2pair(c))));
+< 		}else printf("WTF");
+< 		expr=pop(expr);
+< 	}
+<     return tokenlist;
+< }
+< 
+< struct pair* parse(struct pair* tokenlist){
+< 	struct pair* stack=cons(NULL,NULL);
+< 	while(tokenlist!=NULL){
+< 		struct pair* token = tokenlist->car;
+<       	tokenlist = tokenlist->cdr;
+< 		if (token==(struct pair*)('(')){
+< 			stack = push(stack,NULL);
+< 		}else if(token==(struct pair*)(')')){
+< 			struct pair* top= stack->car;
+< 			stack=stack->cdr;
+< 			stack->car=append(stack->car,top);
+< 		}else {
+< 			stack->car=append(stack->car,token);
+< 		}
+< 	}
+< 	return stack->car;
+< }
+< 
+< 
+< struct pair* lookup(struct pair* var,struct pair* env){
+<     if (env==NULL) error(cons(str_unboundv,cons(var,NULL)));
+<     struct pair* frame = env->car;
+<     struct pair* vars = frame->car;
+<     struct pair* vals = frame->cdr;
+<     while (vars!=NULL){
+<         if ((var->car==type_str) &&(eqq(var,vars->car)==b_true)) return vals->car;
+<         vars = vars->cdr;
+<         vals = vals->cdr;
+---
+> 	pair frame = car(env);
+>     pair vars = car(frame);
+>     pair vals = cdr(frame);
+>     while (vars!=nil){
+>         if ((symq(var)) && (eqq(var,car(vars)))) return car(vals);
+>         vars = cdr(vars);
+>         vals = cdr(vals);
+218c322
+< 	return lookup(var,env->cdr);
+---
+> 	return lookup(var,cdr(env));
+220,229c324,336
+< 
+< struct pair* set(struct pair* var,struct pair* val,struct pair* env){
+<     if (env==NULL) error(cons(str_unboundvset,cons(var,NULL)));
+<     struct pair* frame = env->car;
+<     struct pair* vars = frame->car;
+<     struct pair* vals = frame->cdr;
+<     while (vars!=NULL){
+<         if (eqq(var,vars->car)==b_true){
+<             vals->car=val;
+<             return str_ok;
+---
+> //set
+> pair set(pair var,pair val,pair env){
+>     if (env==nil){
+> 		printf("error");
+> 		exit(1);
+>     }
+>     pair frame = car(env);
+>     pair vars = car(frame);
+>     pair vals = cdr(frame);
+>     while (vars!=nil){
+>         if (eqq(var,car(vars))){
+>             setcar(vals,val);
+>             return getsym("ok");
+231,232c338,339
+<         vars = vars->cdr;
+<         vals = vals->cdr;
+---
+>         vars = cdr(vars);
+>         vals = cdr(vals);
+234c341
+< 	return set(var,val,env->cdr);
+---
+> 	return set(var,val,cdr(env));
+236,246c343,353
+< 
+< struct pair* define(struct pair* var,struct pair* val,struct pair* env){
+<     struct pair* frame = env->car;
+<     struct pair* vars = frame->car;
+<     struct pair* vals = frame->cdr;
+<     struct pair* xvars = vars;
+<     struct pair* xvals = vals;
+<     while (xvars!=NULL){
+<         if (eqq(var,xvars->car)==b_true){
+<             xvals->car = val;
+<             return str_ok;
+---
+> //define
+> pair define(pair var,pair val,pair env){
+>     pair frame = car(env);
+>     pair vars = car(frame);
+>     pair vals = cdr(frame);
+>     pair xvars = vars;
+>     pair xvals = vals;
+>     while (xvars!=nil){
+>         if (eqq(var,car(xvars))){
+>             setcar(xvals,val);
+>             return getsym("ok");
+248,249c355,356
+<         xvars = xvars->cdr;
+<         xvals = xvals->cdr;
+---
+>         xvars = cdr(xvars);
+>         xvals = cdr(xvals);
+253,270c360,361
+<     env->car=cons(vars,vals);
+<     return str_ok;
+< }
+< 
+< struct pair* f_add(struct pair* l){
+< 	if (l==NULL) return int2pair(0);
+< 	return int2pair(pair2int(l->car)+pair2int(f_add(l->cdr)));
+< }
+< 
+< struct pair* f_sub(struct pair* l){
+< 	if (l==NULL) return int2pair(0);
+< 	if (l->cdr==NULL) return int2pair(-pair2int(l->car));	
+< 	return int2pair(pair2int(l->car)-pair2int(f_add(l->cdr)));
+< }
+< 
+< struct pair* f_mul(struct pair* l){
+< 	if (l==NULL) return int2pair(1);
+< 	return int2pair(pair2int(l->car)*pair2int(f_mul(l->cdr)));
+---
+>     setcar(env,cons(vars,vals));
+>     return getsym("ok");
+272,339c363,392
+< 
+< struct pair* f_div(struct pair* l){
+< 	if (l==NULL) return int2pair(1);
+< 	return int2pair(pair2int(l->car)/pair2int(f_mul(l->cdr)));
+< }
+< 
+< struct pair* and(struct pair* l){
+< 	if (l==NULL) return b_true;
+< 	if ((l->car==b_true) && (and(l->cdr)==b_true)) return b_true;
+< 	return b_false;
+< }
+< 
+< struct pair* or(struct pair* l){
+< 	if (l==NULL) return b_false;
+< 	if ((l->car==b_true) || (or(l->cdr)==b_true)) return b_true;
+< 	return b_false;
+< }
+< 
+< struct pair* not(struct pair* l){
+< 	if (l->car==b_true) return b_false;
+< 	return b_true;
+< }
+< 
+< struct pair* eq(struct pair* l){
+< 	if (pair2int(l->car)==pair2int(l->cdr->car)) return b_true;
+< 	return b_false;
+< }
+< struct pair* le(struct pair* l){
+< 	if (pair2int(l->car)<pair2int(l->cdr->car)) return b_true;
+< 	return b_false;
+< }
+< struct pair* gt(struct pair* l){
+< 	if (pair2int(l->car)>pair2int(l->cdr->car)) return b_true;
+< 	return b_false;
+< }
+< struct pair* nullq(struct pair* l){
+< 	if (l==NULL) return b_true;
+< 	return b_false;
+< }
+< 
+<     
+< /*
+<     elif proc=='error':
+<         return error(car(args))
+<     elif car(proc) == 'procedure':
+<         param = car(cdr(proc))
+<         if isinstance(param,str):
+<             param = cons(param,None)
+<             args = cons(args,None)
+<         body = car(cdr(cdr(proc)))
+<         if length(param)<length(args):
+<             error(cons("Too many arguments supplied: ",cons(param,cons(args,None))))
+<         elif length(param)>length(args):
+<             error(cons("Too few arguments supplied: ",cons(param,cons(args,None))))
+<         frame = cons(param,args)
+<         env = car(cdr(cdr(cdr(proc))))
+<         newenv = cons(frame,env)
+<         while not (nullq(cdr(body))):
+<             eval(car(body),newenv)
+<             body = cdr(body)
+<         return eval(car(body),newenv)
+<     error(cons("Unknown procedure type: APPLY ",cons(proc,None)))
+< */
+< struct pair* eval(struct pair* exp,struct pair* env){
+<     //self evaluating (boolean, int)
+<     if (exp==NULL) return NULL;
+<     else if (exp==b_true||exp==b_false) return exp;
+<     else if (pairq(exp)==b_true && exp->car==type_int) return exp;
+---
+> pair let2lambda(pair exp,pair env){
+> 	pair args=nil;
+> 	pair vals=nil;
+> 	pair proc = cdr(exp);
+> 	exp=car(exp);
+> 	while (exp!=nil){
+> 		args=append(args,car(car(exp)));
+> 		vals=append(vals,eval(car(cdr(car(exp))),env));
+> 		exp=cdr(exp);
+> 	}
+> 	pair l=nil;
+> 	l=append(l,getsym("lambda"));
+> 	l=append(l,args);
+> 	l=append(l,car(proc));
+> 	l=cons(l,vals);
+> 	return l;
+> }
+> 
+> //eval
+> pair eval(pair exp,pair env){
+> 	push(exp);push(env);
+> 	if(MAX-mfree<500){
+> 			garbage();
+> 	}
+> 	env=pop();
+> 	exp=pop();
+> 	//self evaluating (boolean, int,float)
+>     if (exp==nil) return nil;
+>     else if (numq(exp)) return exp;
+>     else if (floatq(exp)) return exp;
+341,345c394,396
+<     else if (pairq(exp)==b_true && exp->car==type_str){
+< 		return lookup(exp,env);
+< 	}
+< 	else if (pairq(exp)==b_true){
+< 		struct pair* sym = exp->car;
+---
+>     else if (symq(exp)) return lookup(exp,env);
+> 	else if (pairq(exp)){
+> 		pair sym = car(exp);
+347,352c398,407
+< 		if (eqq(sym,str2pair("quote"))==b_true) return exp->cdr->car;
+<         //assignment
+<         if (eqq(sym,str2pair("set!"))==b_true){
+<             struct pair* var = exp->cdr->car;
+<             struct pair* val = eval(exp->cdr->cdr->car,env);
+<             return set(var,val,env);
+---
+> 		if (eqq(sym,getsym("quote"))) return car(cdr(exp));
+>     	//assignment
+>         if (eqq(sym,getsym("set!"))){
+> 			pair var = car(cdr(exp));
+> 			push(env);
+> 			push(var);
+>             pair val = eval(car(cdr(cdr(exp))),env);
+>             var=pop();
+> 			env=pop();
+> 			return set(var,val,env);
+355,359c410,418
+<         if (eqq(sym,str2pair("define"))==b_true){
+<             struct pair* var = exp->cdr->car;
+<             if (var->car==type_str){
+<                 struct pair* val = eval(exp->cdr->cdr->car,env);
+<                 return define(var,val,env);
+---
+>         if (eqq(sym,getsym("define"))){
+>             pair var = car(cdr(exp));
+>             if (symq(var)){
+> 				push(var);
+> 				push(env);
+>                 pair val = eval(car(cdr(cdr(exp))),env);
+> 				env=pop();
+> 				var=pop();
+> 				return define(var,val,env);
+361,367c420,430
+<             if (pairq(var)==b_true){
+<                 struct pair* f = var->car;
+<                 struct pair* par = var->cdr;
+<                 struct pair* body = exp->cdr->cdr;
+<                 struct pair* p = cons(str2pair("lambda"),cons(par,body));
+<                 struct pair* proc = eval(p,env);
+<                 return define(f,proc,env);
+---
+>             if (pairq(var)){
+>                 pair f = car(var);
+>                 pair par = cdr(var);
+>                 pair body = cdr(cdr(exp));
+>                 pair p = cons(getsym("lambda"),cons(par,body));
+> 				push(f);
+> 				push(env);
+> 				pair proc = eval(p,env);
+> 				env=pop();
+> 				f=pop();
+> 				return define(f,proc,env);
+371,375c434,442
+<         if (eqq(sym,str2pair("if"))==b_true){
+<             struct pair* pred = eval(exp->cdr->car,env);
+<             if (pred==b_true){
+<                 struct pair* if_con = exp->cdr->cdr->car;
+<                 return eval(if_con,env);
+---
+>         if (eqq(sym,getsym("if"))){
+> 			push(exp);
+> 			push(env);	
+>             pair pred = eval(car(cdr(exp)),env);
+> 			env=pop();
+> 			exp=pop();
+> 			if (pred==getsym("#t")){
+>                 pair if_con = car(cdr(cdr(exp)));
+>             	return eval(if_con,env);
+377,378c444,445
+<                 struct pair* if_alt = exp->cdr->cdr->cdr->car;
+<                 return eval(if_alt,env);
+---
+>                 pair if_alt = car(cdr(cdr(cdr(exp))));
+>             	return eval(if_alt,env);
+380a448,450
+> 		else if (eqq(sym,getsym("let"))){
+> 			return eval(let2lambda(cdr(exp),env),env);
+> 		}
+382,389c452,464
+<         if (eqq(sym,str2pair("lambda"))==b_true)
+<             return cons(str_procedure,cons(exp->cdr->car,cons(exp->cdr->cdr,cons(env,NULL))));
+<         //begin
+<         if (eqq(sym,str2pair("begin"))==b_true){
+<             struct pair* sequence = exp->cdr;
+<             while (sequence->cdr){
+<                 eval(sequence->car,env);
+<                 sequence = sequence->cdr;
+---
+>         if (eqq(sym,getsym("lambda"))){
+>             return cons(getsym("procedure"),cons(car(cdr(exp)),cons(cdr(cdr(exp)),cons(env,nil))));
+> 		}        
+> 		//begin
+>         if (eqq(sym,getsym("begin"))){
+>             pair sequence = cdr(exp);
+>             while (cdr(sequence)){
+> 				push(sequence);
+> 				push(env);
+>                 eval(car(sequence),env);
+> 				env=pop();
+> 				sequence=pop();
+> 				sequence = cdr(sequence);
+391c466
+<             return eval(sequence->car,env);
+---
+>             return eval(car(sequence),env);
+394,400c469,485
+<         if (eqq(sym,str2pair("cond"))==b_true){
+<             struct pair* conds = exp->cdr;
+<             while (conds){
+<                 struct pair* cond = conds->car;
+<                 if (eval(cond->car,env)==b_true)
+<                     return eval(cond->cdr->car,env);
+<                 conds = conds->cdr;
+---
+>         if (eqq(sym,getsym("cond"))){
+>             pair conds = cdr(exp);
+>             while (conds!=nil){
+>                 pair cond = car(conds);
+> 				push(conds);
+> 				push(cond);
+> 				push(env);
+>                 if (eval(car(cond),env)==getsym("#t")){
+> 					env=pop();
+> 					cond=pop();
+> 					pop();
+> 					return eval(car(cdr(cond)),env);
+> 				}
+> 				env=pop();
+> 				cond=pop();
+> 				conds=pop();
+> 				conds = cdr(conds);
+402c487
+<             return b_false;
+---
+>             return getsym("#f");
+405,410c490,506
+<         struct pair* op = eval(sym,env);
+<         struct pair* args = NULL;
+<         struct pair* c = exp->cdr;
+<         while (c!=NULL){
+< 			args=append(args,eval(c->car,env));
+<             c=c->cdr;
+---
+> 		push(cdr(exp));
+> 		push(env);
+>         pair op = eval(sym,env);
+> 		env=pop();
+> 		exp=pop();
+> 		push(op);
+>         pair args = nil;
+>         while (exp!=nil){
+> 			push(exp);
+> 			push(env);
+> 			push(args);
+> 			pair r=eval(car(exp),env);
+> 			args=pop();
+> 			env=pop();
+> 			exp=pop();
+> 			args=append(args,r);
+> 			exp=cdr(exp);
+411a508
+> 		op=pop();
+414,415c511
+< 	return NULL;
+< 	
+---
+> 	return nil;
+417,455c513,627
+< struct pair* apply(struct pair* proc,struct pair* args){
+<     if (proc==char2pair('+')) return f_add(args);
+<     if (proc==char2pair('-')) return f_sub(args);
+<     if (proc==char2pair('*')) return f_mul(args);
+<     if (proc==char2pair('/')) return f_div(args);
+< 	if (proc==char2pair('=')) return eq(args);
+< 	if (proc==char2pair('<')) return le(args);
+< 	if (proc==char2pair('>')) return gt(args);
+< 	if (proc==f_and) return and(args);
+<     if (proc==f_or) return or(args);
+<     if (proc==f_not) return not(args);
+<     if (proc==f_nullq) return nullq(args->car);
+<     if (proc==f_pairq) return pairq(args->car);
+< 	if (proc==f_eqq) return eqq(args->car,args->cdr->car);
+< 	if (proc==f_cons) return cons(args->car,args->cdr->car);
+< 	if (proc==f_car) return args->car->car;
+< 	if (proc==f_cdr) return args->car->cdr;
+< 	if (proc==f_eval) return eval(args->car,global_env);
+<     if (proc==f_error) error(args->car);
+<     if (proc==g_mem) return int2pair(mem);
+<     if (proc->car == str_procedure){
+<         struct pair* param = proc->cdr->car;
+<         if (param->car==type_str){
+<             param = cons(param,NULL);
+<             args = cons(args,NULL);
+< 		}
+<         struct pair* body = proc->cdr->cdr->car;
+<         //if length(param)<length(args):
+<         //    error(cons("Too many arguments supplied: ",cons(param,cons(args,None))))
+<         //elif length(param)>length(args):
+<         //    error(cons("Too few arguments supplied: ",cons(param,cons(args,None))))
+<         struct pair* frame = cons(param,args);
+<         struct pair* env = proc->cdr->cdr->cdr->car;
+<         struct pair* newenv = cons(frame,env);
+<         while (body->cdr){
+<             eval(body->car,newenv);
+<             body = body->cdr;
+< 		}
+<         return eval(body->car,newenv);
+---
+> 
+> //apply
+> pair apply(pair proc,pair args){
+>     if (proc==getsym("+")) return f_add(args);
+>     if (proc==getsym("-")) return f_sub(args);
+>     if (proc==getsym("*")) return f_mul(args);
+>     if (proc==getsym("/")) return f_div(args);
+> 	if (proc==getsym("=")) return (eq(args)? getsym("#t"): getsym("#f"));
+> 	if (proc==getsym("<")) return (lt(args)? getsym("#t"): getsym("#f"));
+> 	if (proc==getsym(">")) return (gt(args)? getsym("#t"): getsym("#f"));
+> 	if (proc==getsym("and")) return and(args);
+>     if (proc==getsym("or")) return or(args);
+>     if (proc==getsym("not")) return not(args);
+>     if (proc==getsym("null?")) return (nullq(car(args))? getsym("#t"): getsym("#f"));
+>     if (proc==getsym("pair?")) return (pairq(car(args))? getsym("#t"): getsym("#f"));
+> 	if (proc==getsym("eq?")) return (eqq(car(args),car(cdr(args)))? getsym("#t"): getsym("#f"));
+> 	if (proc==getsym("cons")) return cons(car(args),car(cdr(args)));
+> 	if (proc==getsym("car")) return car(car(args));
+> 	if (proc==getsym("cdr")) return cdr(car(args));
+> 	if (proc==getsym("setcar!")) {setcar(car(args),car(cdr(args)));return getsym("ok");}
+> 	if (proc==getsym("setcdr!")) {setcdr(car(args),car(cdr(args)));return getsym("ok");}
+> 	if (proc==getsym("eval")) return eval(car(args),global_env);
+> 	if (proc==getsym("display"))	{
+> 				print(car(args));
+> 				return getsym("");
+> 				}
+>     if (car(proc) == getsym("procedure")){
+>         pair param = car(cdr(proc));
+>         if (symq(param)){
+>             param = cons(param,nil);
+>             args = cons(args,nil);
+> 		}
+>         pair body = car(cdr(cdr(proc)));
+>         pair frame = cons(param,args);
+>         pair env =car(cdr(cdr(cdr(proc))));
+>         pair newenv = cons(frame,env);
+>         while (cdr(body)){
+> 			push(body);
+> 			push(newenv);
+>             eval(car(body),newenv);
+> 			newenv=pop();
+> 			body=pop();
+>             body = cdr(body);
+> 		}
+>         return eval(car(body),newenv);
+> 	}
+> 	printf("error: apply");
+> 	exit(1);
+> }
+> 
+> pair token=nil;
+> float ten=1.0;
+> char* s;
+> //parse input buffer and push parse tree to stack
+> void repl(char* expr){
+> 	char c;
+> 	while((c=*expr)!='\0'){
+> 			if ((c=='\'')||(c=='(')||(c==')')||(c==' ')||(c=='\t')||(c=='\n')){
+> 				//terminate token
+> 				if (numq(token)) push(append(pop(),token));
+> 				else if (floatq(token)) push(append(pop(),token));
+> 				else if (symq(token)){*expr='\0';push(append(pop(),getsym(s)));}
+> 				token=nil;
+> 				if (c=='('){
+> 					//new list
+> 					push(nil);
+> 				}else if (c==')'){
+> 					//end list
+> 					while (car(top())==getsym("\'")){
+> 						setcar(top(),getsym("quote"));
+> 						pair last = pop();
+> 						push(append(pop(),last));
+> 					}
+> 					pair last = pop();
+> 					push(append(pop(),last));
+> 				}else if ((c==' ')||(c=='\t')||(c=='\n')){
+> 					//separator
+> 					while (car(top())==getsym("\'")){
+> 						setcar(top(),getsym("quote"));
+> 						pair last = pop();
+> 						push(append(pop(),last));
+> 					}
+> 					//evaluate
+> 					if ((sfree==1) && (top()!=nil)){
+> 						print(eval(car(top()),global_env));
+> 						printf("\nlisp> ");
+> 						push(cdr(pop()));
+> 					}
+> 				}else if (c=='\''){
+> 					//start quote
+> 					push(nil);
+> 					push(append(pop(),getsym("\'")));
+> 				}
+> 			}else {
+> 				if ((c>='0')&&(c<='9')){
+> 					//number
+> 					if (token==nil) token = consint(c-'0');
+> 					else if (numq(token)) token=consint(getint(token)*10+c-'0');
+> 					else if (floatq(token)){
+> 						token=consfloat(getfloat(token)+(float)(c-'0')/ten);
+> 						ten=ten*10.0;
+> 					}
+> 				}else if (c=='.'){
+> 					//float
+> 					if (numq(token)){
+> 						token=consfloat(getint(token));
+> 						ten=10.0;
+> 					}
+> 				}else if (token==nil){
+> 					//new symbol
+> 					s=expr;
+> 					token=TAG_SYM;
+> 				}
+> 			}
+> 			expr++;
+457,458d628
+<     error(cons(str2pair("Unknown procedure type: APPLY "),cons(proc,NULL)));
+< 	return NULL;
+460a631,659
+> //initialise global environment
+> void init(){
+> 	define(getsym("nil"),nil,global_env);
+> 	define(getsym("#f"),getsym("#f"),global_env);
+> 	define(getsym("#t"),getsym("#t"),global_env);
+> 	define(getsym("and"),getsym("and"),global_env);
+> 	define(getsym("or"),getsym("or"),global_env);
+> 	define(getsym("not"),getsym("not"),global_env);
+> 	define(getsym("+"),getsym("+"),global_env);
+> 	define(getsym("-"),getsym("-"),global_env);
+> 	define(getsym("*"),getsym("*"),global_env);
+> 	define(getsym("/"),getsym("/"),global_env);
+> 	define(getsym("="),getsym("="),global_env);
+> 	define(getsym(">"),getsym(">"),global_env);
+> 	define(getsym("<"),getsym("<"),global_env);
+> 	define(getsym("else"),getsym("#t"),global_env);
+> 	define(getsym("eq?"),getsym("eq?"),global_env);
+> 	define(getsym("pair?"),getsym("pair?"),global_env);
+> 	define(getsym("null?"),getsym("null?"),global_env);
+> 	define(getsym("cons"),getsym("cons"),global_env);
+> 	define(getsym("car"),getsym("car"),global_env);
+> 	define(getsym("cdr"),getsym("cdr"),global_env);
+> 	define(getsym("setcar!"),getsym("setcar!"),global_env);
+> 	define(getsym("setcdr!"),getsym("setcdr!"),global_env);
+> 	define(getsym("eval"),getsym("eval"),global_env);
+> 	define(getsym("display"),getsym("display"),global_env);
+> }
+> 
+> //main: initialise read from stdin and start read evaluate print loop
+462,485c661,669
+< 	global_env = cons(cons(NULL,NULL),NULL);
+< 	define(str2pair("free"),f_free,global_env);
+< 	define(str2pair("#t"),b_true,global_env);
+< 	define(str2pair("#f"),b_false,global_env);
+< 	define(str2pair("and"),f_and,global_env);
+< 	define(str2pair("or"),f_or,global_env);
+< 	define(str2pair("not"),f_not,global_env);
+< 	define(str2pair("+"),char2pair('+'),global_env);
+< 	define(str2pair("-"),char2pair('-'),global_env);
+< 	define(str2pair("*"),char2pair('*'),global_env);
+< 	define(str2pair("/"),char2pair('/'),global_env);
+< 	define(str2pair("="),char2pair('='),global_env);
+< 	define(str2pair(">"),char2pair('>'),global_env);
+< 	define(str2pair("<"),char2pair('<'),global_env);
+< 	define(str2pair("else"),b_true,global_env);
+< 	define(str2pair("eq?"),f_eqq,global_env);
+< 	define(str2pair("pair?"),f_pairq,global_env);
+< 	define(str2pair("null?"),f_nullq,global_env);
+< 	define(str2pair("cons"),f_cons,global_env);
+< 	define(str2pair("car"),f_car,global_env);
+< 	define(str2pair("cdr"),f_cdr,global_env);
+< 	define(str2pair("eval"),f_eval,global_env);
+< 	define(str2pair("error"),f_error,global_env);
+< 	define(str2pair("mem"),g_mem,global_env);
+---
+> 	printf("lisp v6\nsizeof pair: %d\nsize of number: %d\nsize of float: %d\nsize of (char*): %d\n",sizeof(pair),sizeof(number),sizeof(float),sizeof(char*));
+> //	setbuf(stdout, NULL);
+> 	cars=cars1;
+> 	cdrs=cdrs1;
+> 	cars[0]=0;
+> 	cdrs[0]=0;
+> 	mfree=1;
+> 	symbols=nil;//symbols
+> 	global_env = cons(cons(nil,nil),nil);//global_env
+487a672
+> 	init();	
+489,506c674,677
+< 	while((n=read(0,&buf,512))>0){
+< 	struct pair* p=cons(type_str,NULL);
+< 	for (int i=0;i<n;i++){
+< 		p=append(p,char2pair(buf[i]));
+< 	}
+< 	//print(p);
+< 	struct pair* t=tokenize(p);
+< 	//printf("\ntokenize:");
+< 	//print(t);
+< 	//printf("\ntree:");
+< 	struct pair* tr=parse(t);
+< 	//print(tr);
+< 	//printf("\neval:");
+< 	while(tr!=NULL){
+< 		print(eval(tr->car,global_env));
+< 		printf("\nlisp> ");
+< 		tr=tr->cdr;
+< 	}
+---
+> 	push(nil);
+> 	while((n=read(0,&buf,511))>0){
+> 		buf[n]='\0';
+> 		repl(buf);
+507a679,680
+> 	printf("bye\n");
+> 	exit(0);
+
+###############################################
+../printf.c
+###############################################
+42c42
+< printptr(int fd, uint32 x) {
+---
+> printptr(int fd, uint64 x) {
+46,47c46,47
+<   for (i = 0; i < (sizeof(uint32) * 2); i++, x <<= 4)
+<     putc(fd, digits[x >> (sizeof(uint32) * 8 - 4)]);
+---
+>   for (i = 0; i < (sizeof(uint64) * 2); i++, x <<= 4)
+>     putc(fd, digits[x >> (sizeof(uint64) * 8 - 4)]);
+70c70
+<         printint(fd, va_arg(ap, uint32), 10, 0);
+---
+>         printint(fd, va_arg(ap, uint64), 10, 0);
+74c74
+<         printptr(fd, va_arg(ap, uint32));
+---
+>         printptr(fd, va_arg(ap, uint64));
+
+###############################################
+../zombie.c
+###############################################
+12c12
+<     sleep(5);  // Let child exit before parent.
+---
+>     sleep(50);  // Let child exit before parent.
+
