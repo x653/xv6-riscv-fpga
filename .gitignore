@@ -12,3 +12,4 @@ xv6-riscv/kernel/kernel
 *.hex
 *.readelf
 *.elf
+*.gcode
