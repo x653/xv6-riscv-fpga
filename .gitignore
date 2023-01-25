@@ -5,3 +5,9 @@ _*
 *.blend1
 *.out
 *.stl
+*.dblite
+fs.img
+xv6/xv6
+*.hex
+*.readelf
+*.elf

@@ -48,8 +48,8 @@ int getInode(int n){
 	printf("reading inode %d\n",n);
 	if (spi_rb(sb.inodestart,buf)) panic("read block\n");
 	memmove(&file,buf+sizeof(file)*n,sizeof(file));
-	printf("file.type: %d\n",file.type);
-	printf("file.size: %d\n",file.size);
+	//printf("file.type: %d\n",file.type);
+	//printf("file.size: %d\n",file.size);
 	//for (int i=0;i<12;i++){
 	//	printf("file.addrs[%d]: %p\n",i,file.addrs[i]);
 	//}
@@ -107,6 +107,7 @@ int boot(){
 		//printf("prog.align: %p\n",prog.align);
 		load(prog.off,prog.paddr,prog.filesz);
 	}	
+	printf("jump to entry point %p\n\n",elf.entry);
 	
 }
 
@@ -117,9 +118,17 @@ void main(void)
 		*(int*)i = 0;
 	}
 	uart_init();
-	printf("\n              __          __                   \n__  ____   __/ /_        / _|_ __   __ _  __ _ \n\\ \\/ /\\ \\ / / '_ \\ _____| |_| '_ \\ / _` |/ _` |\n >  <  \\ V /| (_) |_____|  _| |_) | (_| | (_| |\n/_/\\_\\  \\_/  \\___/      |_| | .__/ \\__, |\\__,_|\n                            |_|    |___/       \n");
+	printf("\n ___ ___ ___  ___  __   __\n| _ \\_ _/ __|/ __|_\\ \\ / /\n|   /| |\\__ \\ (_|___\\ V / \n|_|_\\___|___/\\___|   \\_/  \n");
+	printf("Processor: RV32ia @25MHz V1.0\n\n");
+	printf("0x00000000 BOOT (8 KB)\n");
+	printf("0x02000000 CLINT\n");
+	printf("0x0C000000 PLIC\n");
+	printf("0x10000000 UART\n");
+	printf("0x20000000 SD-CARD\n");
+	printf("0x80000000 RAM (512 KB)\n\n");
+
 	boot();
-	printf("jump to entry point %p\n",elf.entry);
+	printf("Welcome to RV32ia 6th Edition UNIX\n");
 	asm volatile("mv ra,%0" : : "r" (elf.entry));
 	asm volatile("ret");
 }
