@@ -1,8 +1,0 @@
-38c38
-< //  __sync_synchronize();
----
->   __sync_synchronize();
-57c57
-< //  __sync_synchronize();
----
->   __sync_synchronize();

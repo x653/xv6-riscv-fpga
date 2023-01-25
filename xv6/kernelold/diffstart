@@ -1,4 +1,0 @@
-62c62
-<   uint32 interval =  2400000; // cycles; about 1/10th second in qemu.
----
->   uint32 interval =  1000000; // cycles; about 1/10th second in qemu.

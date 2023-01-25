@@ -1,8 +1,0 @@
-44c44
-< 	spi_init();
----
-> 	//spi_init();
-46c46
-<     //virtio_disk_init(); // emulated hard disk
----
->     virtio_disk_init(); // emulated hard disk
