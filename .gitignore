@@ -13,3 +13,9 @@ xv6-riscv/kernel/kernel
 *.readelf
 *.elf
 *.gcode
+*.dblite
+fs.img
+xv6/xv6
+*.hex
+*.readelf
+*.elf
