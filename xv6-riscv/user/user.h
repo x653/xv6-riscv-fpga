@@ -1,5 +1,4 @@
 struct stat;
-struct rtcdate;
 
 // system calls
 int fork(void);
@@ -10,7 +9,7 @@ int write(int, const void*, int);
 int read(int, void*, int);
 int close(int);
 int kill(int);
-int exec(char*, char**);
+int exec(const char*, char**);
 int open(const char*, int);
 int mknod(const char*, short, short);
 int unlink(const char*);
@@ -38,3 +37,5 @@ void* memset(void*, int, uint);
 void* malloc(uint);
 void free(void*);
 int atoi(const char*);
+int memcmp(const void *, const void *, uint);
+void *memcpy(void *, const void *, uint);

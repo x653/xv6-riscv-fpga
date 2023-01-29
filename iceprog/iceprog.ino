@@ -94,8 +94,6 @@ void setup() {
    pinMode(CDONE,INPUT);
    pinMode(RESET,OUTPUT);
    pinMode(LED,OUTPUT);
-   digitalWrite(LED,0);
-   pinMode(CS,OUTPUT);
    digitalWrite(CS,HIGH);
    pinMode(UEXT_POWER, OUTPUT);
    digitalWrite(UEXT_POWER, HIGH);
@@ -106,43 +104,26 @@ void setup() {
    Serial.begin(230400);
    while (!Serial);
 
-   isProg=false;
-   HWB_INPUT;                   // Initialize HWB
-   HWB_PULL_UP;
-   Serial1.begin(230400);
-   digitalWrite(LED,!isProg);  //Yellow LED is Prog
-}
+   Serial1.begin(115200);
 
-void loop(){
-  if (isProg) loopProg();
-  else loopBridge();
-  if (HWB) {
-    isProg = !isProg;
-    digitalWrite(LED,!isProg);
-    delay(1000);
-  }
-}
+   while(1){
+      // read from port 0, send to port 1:
+      if (Serial.available()) {
+          int inByte = Serial.read();
+          if (inByte==FEND) break;
+          Serial1.write(inByte);
+      }
 
-void loopBridge(){
-  // read from port 0, send to port 1:
-  if (Serial.available()) {
-    int inByte = Serial.read();
-    if (inByte==FEND){
-      isProg=true;
-      digitalWrite(LED,!isProg);
+      // read from port 1, send to port 0:
+      if (Serial1.available()) {
+        int inByte = Serial1.read();
+        Serial.write(inByte);
+      }
     }
-    Serial1.write(inByte);
-  }
-
-  // read from port 1, send to port 0:
-  if (Serial1.available()) {
-    int inByte = Serial1.read();
-    Serial.write(inByte);
-  }
-
 }
 
-void loopProg() {
+
+void loop() {
     
   if (readSerialFrame())
   {

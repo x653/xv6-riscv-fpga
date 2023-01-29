@@ -39,12 +39,12 @@ printint(int fd, int xx, int base, int sgn)
 }
 
 static void
-printptr(int fd, uint64 x) {
+printptr(int fd, uint32 x) {
   int i;
   putc(fd, '0');
   putc(fd, 'x');
-  for (i = 0; i < (sizeof(uint64) * 2); i++, x <<= 4)
-    putc(fd, digits[x >> (sizeof(uint64) * 8 - 4)]);
+  for (i = 0; i < (sizeof(uint32) * 2); i++, x <<= 4)
+    putc(fd, digits[x >> (sizeof(uint32) * 8 - 4)]);
 }
 
 // Print to the given fd. Only understands %d, %x, %p, %s.
@@ -67,11 +67,11 @@ vprintf(int fd, const char *fmt, va_list ap)
       if(c == 'd'){
         printint(fd, va_arg(ap, int), 10, 1);
       } else if(c == 'l') {
-        printint(fd, va_arg(ap, uint64), 10, 0);
+        printint(fd, va_arg(ap, uint32), 10, 0);
       } else if(c == 'x') {
         printint(fd, va_arg(ap, int), 16, 0);
       } else if(c == 'p') {
-        printptr(fd, va_arg(ap, uint64));
+        printptr(fd, va_arg(ap, uint32));
       } else if(c == 's'){
         s = va_arg(ap, char*);
         if(s == 0)

@@ -68,12 +68,12 @@ module uart(
 		else if (i_stb & i_we[3] & addr_is3) DLA <= i_dat_w[31];
 
 	wire dll_load = i_stb & i_we[0] & addr_is8;
-	wire dlh_load = i_stb & i_we[1] & addr_is8;
+	wire dlh_load = i_stb & i_we[1] & addr_is9;
 
 	//DL Divisor Latch Value
 	reg [15:0] DL;
 	always @(posedge i_clk)
-		if (i_rst) DL <= 103;//173;
+		if (i_rst) DL <= 277;//115200 Baud
 		else if (dll_load) DL[7:0] <= i_dat_w[7:0];
 		else if (dlh_load) DL[15:8] <= i_dat_w[15:8];
 

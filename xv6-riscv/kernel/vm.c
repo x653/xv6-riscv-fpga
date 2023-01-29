@@ -48,25 +48,6 @@ kvmmake(void)
   
   return kpgtbl;
 }
-// translate a kernel virtual address to
-// a physical address. only needed for
-// addresses on the stack.
-// assumes va is page aligned.
-uint32
-kvmpa(uint32 va)
-{
-  uint32 off = va % PGSIZE;
-  pte_t *pte;
-  uint32 pa;
-  
-  pte = walk(kernel_pagetable, va, 0);
-  if(pte == 0)
-    panic("kvmpa");
-  if((*pte & PTE_V) == 0)
-    panic("kvmpa");
-  pa = PTE2PA(*pte);
-  return pa+off;
-}
 
 // Initialize the one kernel_pagetable
 void

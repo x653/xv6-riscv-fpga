@@ -130,6 +130,7 @@ UPROGS=\
 	$U/_cat\
 	$U/_echo\
 	$U/_forktest\
+	$U/_grind\
 	$U/_grep\
 	$U/_init\
 	$U/_kill\
@@ -145,7 +146,7 @@ UPROGS=\
 	$U/_usertests\
 	$U/_lisp\
 	$U/_hello\
-	$U/_float\
+	$U/_mem\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	cp kernel/kernel xv6.kernel

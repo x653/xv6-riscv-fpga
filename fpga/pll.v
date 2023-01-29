@@ -6,26 +6,28 @@
  * Use at your own risk.
  *
  * Given input frequency:       100.000 MHz
- * Requested output frequency:   24.000 MHz
- * Achieved output frequency:    23.958 MHz
+ * Requested output frequency:   32.000 MHz
+ * Achieved output frequency:    32.031 MHz
  */
-/* verilator lint_off PINMISSING */
+
 module pll(
 	input  clock_in,
-	output clock_out
+	output clock_out,
+	output locked
 	);
 
 SB_PLL40_CORE #(
 		.FEEDBACK_PATH("SIMPLE"),
-		.DIVR(4'b0010),		// DIVR =  2
-		.DIVF(7'b0010110),	// DIVF = 22
+		.DIVR(4'b0011),		// DIVR =  3
+		.DIVF(7'b0101000),	// DIVF = 40
 		.DIVQ(3'b101),		// DIVQ =  5
-		.FILTER_RANGE(3'b011)	// FILTER_RANGE = 3
+		.FILTER_RANGE(3'b010)	// FILTER_RANGE = 2
 	) uut (
+		.LOCK(locked),
 		.RESETB(1'b1),
 		.BYPASS(1'b0),
 		.REFERENCECLK(clock_in),
 		.PLLOUTCORE(clock_out)
 		);
-/* verilator lint_on PINMISSING */
+
 endmodule
