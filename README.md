@@ -1,92 +1,149 @@
-# xv6-fpga
+# xv6-riscv-fpga
 
-Build and run a complete computer system from scratch using only FOSS (free and open source hard- and software).
+Build a RISC-V computer system on fpga iCE40HX8K-EVB and run UNIX xv6 using only FOSS (free and open source hard- and software).
 
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+## Build hardware
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/x653/xv6-fpga.git
-git branch -M main
-git push -uf origin main
+$ cd fpga
+$ cd boot
+$ make
+$ cd ..
+$ apio upload
 ```
 
-## Integrate with your tools
+## Build software
 
-- [ ] [Set up project integrations](https://gitlab.com/x653/xv6-fpga/-/settings/integrations)
+```
+$ cd xv6-riscv
+$ make
+$ make fs.img
+```
 
-## Collaborate with your team
+## Run UNIX xv6 on RISC-V
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+```
+$ tio -m INLCRNL /dev/ttyACM0
 
-## Test and Deploy
+ ___ ___ ___  ___  __   __
+| _ \_ _/ __|/ __|_\ \ / /
+|   /| |\__ \ (_|___\ V / 
+|_|_\___|___/\___|   \_/  
 
-Use the built-in continuous integration in GitLab.
+Processor: rv32ia @32MHz V1.0
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+0x00000000 BOOT (12 KB)
+0x02000000 CLINT
+0x0C000000 PLIC
+0x10000000 UART
+0x20000000 SD-CARD
+0x80000000 RAM (512 KB)
 
-***
+reading superblock
+sb.magic: 0x10203040
+reading inode 2
+reading ELF header
+elf.magic: 0x464c457f
+jump to entry point 0x80000000
 
-# Editing this README
+Welcome to rv32ia 6th Edition UNIX
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
+xv6 kernel is booting
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+init: starting sh
+$ 
+```
 
-## Name
-Choose a self-explaining name for your project.
+## Run ls and cat
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+```
+$ ls
+.              1 1 1296
+..             1 1 1296
+xv6.kernel     2 2 45676
+README         2 3 1982
+let            2 4 102
+sqrt           2 5 443
+sqrt2          2 6 467
+fib            2 7 429
+cat            2 8 4016
+echo           2 9 3708
+forktest       2 10 2128
+grind          2 11 7952
+grep           2 12 4612
+init           2 13 3988
+kill           2 14 3672
+ln             2 15 3704
+ls             2 16 4536
+mkdir          2 17 3740
+rm             2 18 3736
+sh             2 19 7936
+wc             2 20 4176
+zombie         2 21 3592
+stressfs       2 22 3896
+uptime         2 23 3820
+usertests      2 24 40660
+lisp           2 25 23432
+hello          2 26 3640
+mem            2 27 4184
+console        3 28 0
+$ cat README
+xv6 is a re-implementation of Dennis Ritchie's and Ken Thompson's Unix
+Version 6 (v6).  xv6 loosely follows the structure and style of v6,
+but is implemented for a modern RISC-V multiprocessor using ANSI C.
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+ACKNOWLEDGMENTS
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+xv6 is inspired by John Lions's Commentary on UNIX 6th Edition (Peer
+to Peer Communications; ISBN: 1-57398-013-7; 1st edition (June 14,
+2000)). See also https://pdos.csail.mit.edu/6.828/, which
+provides pointers to on-line resources for v6.
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+The following people have made contributions: Russ Cox (context switching,
+locking), Cliff Frey (MP), Xiao Yu (MP), Nickolai Zeldovich, and Austin
+Clements.
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+We are also grateful for the bug reports and patches contributed by
+Silas Boyd-Wickizer, Anton Burtsev, Dan Cross, Cody Cutler, Mike CAT,
+Tej Chajed, eyalz800, Nelson Elhage, Saar Ettinger, Alice Ferrazzi,
+Nathaniel Filardo, Peter Froehlich, Yakir Goaron,Shivam Handa, Bryan
+Henry, Jim Huang, Alexander Kapshuk, Anders Kaseorg, kehao95, Wolfgang
+Keller, Eddie Kohler, Austin Liew, Imbar Marinescu, Yandong Mao, Matan
+Shabtay, Hitoshi Mitake, Carmi Merimovich, Mark Morrissey, mtasm, Joel
+Nider, Greg Price, Ayan Shafqat, Eldar Sehayek, Yongming Shen, Cam
+Tenny, tyfkda, Rafael Ubal, Warren Toomey, Stephen Tu, Pablo Ventura,
+Xi Wang, Keiichi Watanabe, Nicolas Wolovick, wxdao, Grant Wu, Jindong
+Zhang, Icenowy Zheng, and Zou Chang Wei.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+The code in the files that constitute xv6 is
+Copyright 2006-2019 Frans Kaashoek, Robert Morris, and Russ Cox.
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+ERROR REPORTS
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+Please send errors and suggestions to Frans Kaashoek and Robert Morris
+(kaashoek,rtm@mit.edu). The main purpose of xv6 is as a teaching
+operating system for MIT's 6.828, so we are more interested in
+simplifications and clarifications than new features.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+BUILDING AND RUNNING XV6
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+You will need a RISC-V "newlib" tool chain from
+https://github.com/riscv/riscv-gnu-toolchain, and qemu compiled for
+riscv64-softmmu. Once they are installed, and in your shell
+search path, you can run "make qemu".
+$ 
+```
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+## Run lisp on xv6 on RISC-V
 
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+```
+$ lisp
+lisp v6
+sizeof pair: 2
+size of number: 4
+size of float: 4
+size of (char*): 4
+lisp> (+ 2 4)
+6
+lisp> 
+```
