@@ -49,7 +49,7 @@ set_io sram_csn T6
 set_io sram_oen L9
 set_io sram_wen T7
 
-set_io sd_miso E4
-set_io sd_mosi B2
-set_io sd_sck F5
-set_io sd_ss B1
+set_io sd_miso R14 #E4
+set_io sd_mosi P15 #B2
+set_io sd_sck P14 #F5
+set_io sd_ss R15 #B1
