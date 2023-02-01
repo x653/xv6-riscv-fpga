@@ -4,8 +4,7 @@ CC = /home/micha/riscv64-unknown-elf-gcc-8.3.0-2020.04.0-x86_64-linux-ubuntu14/b
 INCLUDE =
 LIBS =
 
-clean:
-	rm -f *.elf *.o *.hex firmware.hex
+all:	firmware
 
 firmware.elf:	$(OBJECTS)
 	$(CC) $(CFLAG) $(OBJS) -o $@
@@ -16,7 +15,10 @@ firmware.elf:	$(OBJECTS)
 %.obj:  %.elf
 	/home/micha/riscv64-unknown-elf-gcc-8.3.0-2020.04.0-x86_64-linux-ubuntu14/bin/riscv64-unknown-elf-objdump -d $?
 	
-
 firmware:	firmware.hex
 	cp firmware.hex ../
 
+clean:
+	rm -f *.elf *.o *.hex firmware.hex
+
+.PHONY: all clean

@@ -5,4 +5,13 @@ _*
 *.blend1
 *.out
 *.stl
+*.dblite
+*.bin
+*.hex
 *.gcode
+*.img
+xv6-riscv/xv6.kernel
+xv6-riscv/kernel/kernel
+*.readelf
+*.elf
+*.d

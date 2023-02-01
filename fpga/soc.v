@@ -17,7 +17,7 @@ module soc(
 	output o_spi_ss
 );
 
-parameter RAM_SIZE = 16384-2048;
+parameter RAM_SIZE = 16384-4096;
 
 // SBA Simple Bus Architecture
 wire		sba_rst = i_rst;
