@@ -61,8 +61,8 @@
 //Toggle iceprogduino with serial bridge by pressing the HWB button
 #define HWB (PINE & B00000100)==0     // Check if the button has been pressed
 #define HWB_INPUT DDRE &= B11111011   // Initialize the port
-#define HWB_PULL_UP PORTE |= B00000100   // Initialize the port
-
+#define LED_G 7                       // The GREEN  LED is on Pin 7
+#define LED_Y 9                       // The YELLOW  LED is on Pin 9
 boolean isProg;
 
 uint8_t rxframe[512], txframe[512], fcs,rfcs;
@@ -94,6 +94,8 @@ void setup() {
    pinMode(CDONE,INPUT);
    pinMode(RESET,OUTPUT);
    pinMode(LED,OUTPUT);
+   digitalWrite(LED,0);
+   pinMode(CS,OUTPUT);
    digitalWrite(CS,HIGH);
    pinMode(UEXT_POWER, OUTPUT);
    digitalWrite(UEXT_POWER, HIGH);
@@ -104,27 +106,48 @@ void setup() {
    Serial.begin(230400);
    while (!Serial);
 
+   isProg=false;
+   HWB_INPUT;                   // Initialize HWB
    Serial1.begin(115200);
-
-   while(1){
-      // read from port 0, send to port 1:
-      if (Serial.available()) {
-          int inByte = Serial.read();
-          if (inByte==FEND) break;
-          Serial1.write(inByte);
-      }
-
-      // read from port 1, send to port 0:
-      if (Serial1.available()) {
-        int inByte = Serial1.read();
-        Serial.write(inByte);
-      }
-    }
+   pinMode(LED_Y,OUTPUT);   
+   pinMode(LED_G,OUTPUT);
+   updateLED();
 }
 
+void updateLED(){
+   digitalWrite(LED_Y,isProg);  //Yellow LED is Prog
+   digitalWrite(LED_G,!isProg); //Green LED is Bridge
+}
 
-void loop() {
-    
+void loop(){
+  if (isProg) loopProg();
+  else loopBridge();
+  if (HWB) {
+    isProg = !isProg;
+    updateLED();
+    delay(1000);
+  }
+}
+
+void loopBridge(){
+  // read from port 1, send to port 0:
+  if (Serial1.available()) {
+    int inByte = Serial1.read();
+    Serial.write(inByte);
+  }
+
+  // read from port 0, send to port 1:
+  if (Serial.available()) {
+    int inByte = Serial.read();
+    if (inByte==FEND){
+      isProg=true;
+      updateLED();
+    }
+    Serial1.write(inByte);
+  }
+}
+
+void loopProg() {    
   if (readSerialFrame())
   {
     decodeFrame();

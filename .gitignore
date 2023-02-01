@@ -15,3 +15,5 @@ xv6-riscv/kernel/kernel
 *.readelf
 *.elf
 *.d
+*.asc
+*.json

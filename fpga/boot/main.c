@@ -45,10 +45,10 @@ int getSuperblock(){
 int getELFHeader(){
 	if (spi_rb(file.addrs[0],buf)) panic("getELFHeader()\n");
 	memmove(&elf,buf,sizeof(elf));
+	return (elf.magic==0x464c457f);
 }
 
 int getInode(int n){
-	printf("reading inode %d\n",n);
 	if (spi_rb(sb.inodestart,buf)) panic("read block\n");
 	memmove(&file,buf+sizeof(file)*n,sizeof(file));
 	if (spi_rb(file.addrs[12],(char*)indirect)) panic("getInode()\n");
@@ -82,18 +82,19 @@ void main(void)
 		*(int*)i = 0;
 	}
 	
-	printf("reading superblock\n");
+	printf("reading superblock ");
 	while (!getSuperblock());
-	printf("sb.magic: %p\n",sb.magic);
+	printf("magic: %p\n",sb.magic);
+	printf("reading inode %d\n",2);
 	getInode(2);
-	printf("reading ELF header\n");
+	printf("reading ELF header ");
 	getELFHeader();
-	printf("elf.magic: %p\n",elf.magic);	
+	printf("magic: %p\n",elf.magic);	
 	for (int i=0;i<elf.phnum;i++){
 		memmove(&prog,buf+elf.phoff+i*sizeof(prog),sizeof(prog));
 		load(prog.off,prog.paddr,prog.filesz);
 	}	
-	printf("jump to entry point %p\n\n",elf.entry);
+	printf("jump to entry point       %p\n\n",elf.entry);
 
 	printf("Welcome to rv32ia 6th Edition UNIX\n");
 	asm volatile("mv ra,%0" : : "r" (elf.entry));
