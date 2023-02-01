@@ -1122,6 +1122,78 @@
 <   release(&uart_tx_lock);
 
 ###############################################
+../virtio.h
+###############################################
+4a5
+> // this is the "legacy" virtio interface.
+13c14
+< #define VIRTIO_MMIO_VERSION		0x004 // version; should be 2
+---
+> #define VIRTIO_MMIO_VERSION		0x004 // version; 1 is legacy
+17a19
+> #define VIRTIO_MMIO_GUEST_PAGE_SIZE	0x028 // page size for PFN, write-only
+20a23,24
+> #define VIRTIO_MMIO_QUEUE_ALIGN		0x03c // used ring alignment, write-only
+> #define VIRTIO_MMIO_QUEUE_PFN		0x040 // physical page number for queue, read/write
+26,31d29
+< #define VIRTIO_MMIO_QUEUE_DESC_LOW	0x080 // physical address for descriptor table, write-only
+< #define VIRTIO_MMIO_QUEUE_DESC_HIGH	0x084
+< #define VIRTIO_MMIO_DRIVER_DESC_LOW	0x090 // physical address for available ring, write-only
+< #define VIRTIO_MMIO_DRIVER_DESC_HIGH	0x094
+< #define VIRTIO_MMIO_DEVICE_DESC_LOW	0x0a0 // physical address for used ring, write-only
+< #define VIRTIO_MMIO_DEVICE_DESC_HIGH	0x0a4
+52,54c50,51
+< // a single descriptor, from the spec.
+< struct virtq_desc {
+<   uint32 addr;
+---
+> struct VRingDesc {
+>   uint64 addr;
+62,72c59
+< // the (entire) avail ring, from the spec.
+< struct virtq_avail {
+<   uint16 flags; // always zero
+<   uint16 idx;   // driver will write ring[idx] next
+<   uint16 ring[NUM]; // descriptor numbers of chain heads
+<   uint16 unused;
+< };
+< 
+< // one entry in the "used" ring, with which the
+< // device tells the driver about completed requests.
+< struct virtq_used_elem {
+---
+> struct VRingUsedElem {
+77,85c64
+< struct virtq_used {
+<   uint16 flags; // always zero
+<   uint16 idx;   // device increments when it adds a ring[] entry
+<   struct virtq_used_elem ring[NUM];
+< };
+< 
+< // these are specific to virtio block devices, e.g. disks,
+< // described in Section 5.2 of the spec.
+< 
+---
+> // for disk ops
+89,95c68,71
+< // the format of the first descriptor in a disk request.
+< // to be followed by two more descriptors containing
+< // the block, and a one-byte status.
+< struct virtio_blk_req {
+<   uint32 type; // VIRTIO_BLK_T_IN or ..._OUT
+<   uint32 reserved;
+<   uint32 sector;
+---
+> struct UsedArea {
+>   uint16 flags;
+>   uint16 id;
+>   struct VRingUsedElem elems[NUM];
+
+###############################################
+../virtio_disk.c
+###############################################
+
+###############################################
 ../vm.c
 ###############################################
 31,32c31,32
@@ -1130,7 +1202,7 @@
 ---
 >   kvmmap(kpgtbl, 0x20000000, 0x20000000, PGSIZE, PTE_R | PTE_W);
 >   
-91c110
+91c91
 <   for(int level = 2; level > 0; level--) {
 ---
 >   for(int level = 1; level > 0; level--) {
