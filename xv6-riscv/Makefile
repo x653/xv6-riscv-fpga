@@ -33,7 +33,7 @@ OBJS = \
 
 # riscv32-unknown-elf- or riscv32-linux-gnu-
 # perhaps in /opt/riscv/bin
-TOOLPREFIX = riscv64-unknown-elf-
+TOOLPREFIX = /home/micha/riscv64-unknown-elf-gcc-8.3.0-2020.04.0-x86_64-linux-ubuntu14/bin/riscv64-unknown-elf-
 
 # Try to infer the correct TOOLPREFIX if not set
 ifndef TOOLPREFIX
@@ -55,7 +55,7 @@ LD = $(TOOLPREFIX)ld
 OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
 
-CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer -ggdb
+CFLAGS = -Wall -Werror -O0 -fno-omit-frame-pointer -ggdb
 CFLAGS += -march=rv32ia
 CFLAGS += -mabi=ilp32
 CFLAGS += -mcmodel=medany
