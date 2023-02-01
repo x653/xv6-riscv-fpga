@@ -12,6 +12,9 @@ _*
 *.img
 xv6-riscv/xv6.kernel
 xv6-riscv/kernel/kernel
+xv6-riscv/mkfs/mkfs
+xv6-riscv/user/initcode
+xv6-riscv/user/usys.S
 *.readelf
 *.elf
 *.d

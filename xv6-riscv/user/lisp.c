@@ -69,7 +69,7 @@ void setncar(pair p, pair x){ncars[p & MASK_INDEX]=x;}
 void setncdr(pair p, pair x){ncdrs[p & MASK_INDEX]=x;}
 
 number getint(pair p){return (number)(car(p))<<16 | (number)cdr(p);}
-float getfloat(pair p){number n = getint(p); return *(float*)(&n);}
+float getfloat(pair p){number n = getint(p); void* address= &n; return *(float*)(address);}
 char* getstr(pair p){return (char*)getint(p);}
 
 //constructor for pairs
@@ -92,7 +92,8 @@ pair consint(number n){
 }
 pair consfloat(float x){
     checkmem();
-	pair p = consint(*(number*)(&x));
+	void* a=&x;
+	pair p = consint(*(number*)(a));
     return (p&MASK_INDEX) | TAG_FLOAT;
 }
 pair conssym(char* s){

@@ -29,7 +29,7 @@ kvmmake(void)
 
   // virtio mmio disk interface
   kvmmap(kpgtbl, 0x20000000, 0x20000000, PGSIZE, PTE_R | PTE_W);
-  
+
   // PLIC
   kvmmap(kpgtbl, PLIC, PLIC, 0x400000, PTE_R | PTE_W);
 
@@ -85,7 +85,7 @@ kvminithart()
 pte_t *
 walk(pagetable_t pagetable, uint32 va, int alloc)
 {
-  if(va >= MAXVA)
+  if(va > MAXVA)
     panic("walk");
 
   for(int level = 1; level > 0; level--) {
@@ -111,7 +111,7 @@ walkaddr(pagetable_t pagetable, uint32 va)
   pte_t *pte;
   uint32 pa;
 
-  if(va >= MAXVA)
+  if(va > MAXVA)
     return 0;
 
   pte = walk(pagetable, va, 0);
@@ -172,12 +172,11 @@ uvmunmap(pagetable_t pagetable, uint32 va, uint32 npages, int do_free)
 {
   uint32 a;
   pte_t *pte;
-
   if((va % PGSIZE) != 0)
     panic("uvmunmap: not aligned");
 
-  for(a = va; a < va + npages*PGSIZE; a += PGSIZE){
-    if((pte = walk(pagetable, a, 0)) == 0)
+  for(a = va>>12; a < (va>>12) + (npages*(PGSIZE>>12)); a += PGSIZE>>12){
+    if((pte = walk(pagetable, a<<12, 0)) == 0)
       panic("uvmunmap: walk");
     if((*pte & PTE_V) == 0)
       panic("uvmunmap: not mapped");
@@ -272,7 +271,7 @@ void
 freewalk(pagetable_t pagetable)
 {
   // there are 2^9 = 512 PTEs in a page table.
-  for(int i = 0; i < 512; i++){
+  for(int i = 0; i < 1024; i++){
     pte_t pte = pagetable[i];
     if((pte & PTE_V) && (pte & (PTE_R|PTE_W|PTE_X)) == 0){
       // this PTE points to a lower-level page table.
@@ -280,7 +279,7 @@ freewalk(pagetable_t pagetable)
       freewalk((pagetable_t)child);
       pagetable[i] = 0;
     } else if(pte & PTE_V){
-      panic("freewalk: leaf");
+    	panic("freewalk: leaf");
     }
   }
   kfree((void*)pagetable);

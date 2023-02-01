@@ -94,7 +94,7 @@ void main(void)
 		memmove(&prog,buf+elf.phoff+i*sizeof(prog),sizeof(prog));
 		load(prog.off,prog.paddr,prog.filesz);
 	}	
-	printf("jump to entry point       %p\n\n",elf.entry);
+	printf("jump to entry point:      %p\n\n",elf.entry);
 
 	printf("Welcome to rv32ia 6th Edition UNIX\n");
 	asm volatile("mv ra,%0" : : "r" (elf.entry));
