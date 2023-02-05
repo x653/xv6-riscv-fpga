@@ -1,3 +1,5 @@
+#ifndef __ASSEMBLER__
+
 // which hart (core) is this?
 static inline uint32
 r_mhartid()
@@ -20,13 +22,6 @@ r_mstatus()
 {
   uint32 x;
   asm volatile("csrr %0, mstatus" : "=r" (x) );
-  return x;
-}
-static inline uint32
-r_sscratch()
-{
-  uint32 x;
-  asm volatile("csrr %0, sscratch" : "=r" (x) );
   return x;
 }
 
@@ -118,7 +113,7 @@ w_mie(uint32 x)
   asm volatile("csrw mie, %0" : : "r" (x));
 }
 
-// machine exception program counter, holds the
+// supervisor exception program counter, holds the
 // instruction address to which a return from
 // exception will go.
 static inline void 
@@ -188,10 +183,23 @@ w_mtvec(uint32 x)
   asm volatile("csrw mtvec, %0" : : "r" (x));
 }
 
+// Physical Memory Protection
+static inline void
+w_pmpcfg0(uint32 x)
+{
+  asm volatile("csrw pmpcfg0, %0" : : "r" (x));
+}
+
+static inline void
+w_pmpaddr0(uint32 x)
+{
+  asm volatile("csrw pmpaddr0, %0" : : "r" (x));
+}
+
 // use riscv's sv32 page table scheme.
 #define SATP_SV32 (1L << 31)
-#define MAKE_SATP(pagetable) (SATP_SV32 | (((uint32)pagetable) >> 12)) // 32 bit
 
+#define MAKE_SATP(pagetable) (SATP_SV32 | (((uint32)pagetable) >> 12)) // 32 bit
 // supervisor address translation and protection;
 // holds the address of the page table.
 static inline void 
@@ -206,13 +214,6 @@ r_satp()
   uint32 x;
   asm volatile("csrr %0, satp" : "=r" (x) );
   return x;
-}
-
-// Supervisor Scratch register, for early trap handler in trampoline.S.
-static inline void 
-w_sscratch(uint32 x)
-{
-  asm volatile("csrw sscratch, %0" : : "r" (x));
 }
 
 static inline void 
@@ -267,7 +268,6 @@ r_time()
 static inline void
 intr_on()
 {
-  w_sie(r_sie() | SIE_SEIE | SIE_STIE | SIE_SSIE);
   w_sstatus(r_sstatus() | SSTATUS_SIE);
 }
 
@@ -294,7 +294,7 @@ r_sp()
   return x;
 }
 
-// read and write tp, the thread pointer, which holds
+// read and write tp, the thread pointer, which xv6 uses to hold
 // this core's hartid (core number), the index into cpus[].
 static inline uint32
 r_tp()
@@ -326,6 +326,10 @@ sfence_vma()
   asm volatile("sfence.vma zero, zero");
 }
 
+typedef uint32 pte_t;
+typedef uint32 *pagetable_t; // 1024 PTEs
+
+#endif // __ASSEMBLER__
 
 #define PGSIZE 4096 // bytes per page
 #define PGSHIFT 12  // bits of offset within a page
@@ -337,7 +341,7 @@ sfence_vma()
 #define PTE_R (1L << 1)
 #define PTE_W (1L << 2)
 #define PTE_X (1L << 3)
-#define PTE_U (1L << 4) // 1 -> user can access
+#define PTE_U (1L << 4) // user can access
 
 // shift a physical address to the right place for a PTE.
 #define PA2PTE(pa) ((((uint32)pa) >> 12) << 10)
@@ -346,7 +350,7 @@ sfence_vma()
 
 #define PTE_FLAGS(pte) ((pte) & 0x3FF)
 
-// extract the TWO (not three, only on 64 bit) 10-bit page table indices from a virtual address.
+// extract the three 10-bit page table indices from a virtual address.
 #define PXMASK          0x3FF // 10 bits
 #define PXSHIFT(level)  (PGSHIFT+(10*(level)))
 #define PX(level, va) ((((uint32) (va)) >> PXSHIFT(level)) & PXMASK)
@@ -355,10 +359,4 @@ sfence_vma()
 // MAXVA is actually one bit less than the max allowed by
 // Sv39, to avoid having to sign-extend virtual addresses
 // that have the high bit set.
-//#define MAXVA (1L << (9 + 9 + 9 + 12 - 1))
-
-// HACK FOR 32 bit
 #define MAXVA 0xFFFFFFFF
-
-typedef uint32 pte_t;
-typedef uint32 *pagetable_t; // 1024 PTEs

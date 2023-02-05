@@ -1,18 +1,19 @@
-	#
+        #
         # interrupts and exceptions while in supervisor
         # mode come here.
         #
-        # push all registers, call kerneltrap(), restore, return.
+        # the current stack is a kernel stack.
+        # push all registers, call kerneltrap().
+        # when kerneltrap() returns, restore registers, return.
         #
-
 .globl kerneltrap
 .globl kernelvec
 .align 4
 kernelvec:
-        // make room to save registers.
+        # make room to save registers.
         addi sp, sp, -128
 
-        // save the registers.
+        # save the registers.
         sw ra, 0(sp)
         sw sp, 4(sp)
         sw gp, 8(sp)
@@ -45,14 +46,14 @@ kernelvec:
         sw t5, 116(sp)
         sw t6, 120(sp)
 
-	// call the C trap handler in trap.c
+        # call the C trap handler in trap.c
         call kerneltrap
 
-        // restore registers.
+        # restore registers.
         lw ra, 0(sp)
         lw sp, 4(sp)
         lw gp, 8(sp)
-        // not this, in case we moved CPUs: lw tp, 12(sp)
+        # not tp (contains hartid), in case we moved CPUs
         lw t0, 16(sp)
         lw t1, 20(sp)
         lw t2, 24(sp)
@@ -83,7 +84,7 @@ kernelvec:
 
         addi sp, sp, 128
 
-        // return to whatever we were doing in the kernel.
+        # return to whatever we were doing in the kernel.
         sret
 
         #
@@ -93,7 +94,7 @@ kernelvec:
 .align 4
 timervec:
         # start.c has set up the memory that mscratch points to:
-        # scratch[0,4,8] : register save area.
+        # scratch[0,4,8,12] : register save area.
         # scratch[16] : address of CLINT's MTIMECMP register.
         # scratch[20] : desired interval between interrupts.
         
@@ -102,7 +103,7 @@ timervec:
         sw a2, 4(a0)
         sw a3, 8(a0)
         sw a4, 12(a0)
-
+        
         # schedule the next timer interrupt
         # by adding interval to mtimecmp.
         lw a1, 16(a0) # CLINT_MTIMECMP(hart)
@@ -111,18 +112,15 @@ timervec:
         lw a4, 4(a1) # timecmp a4:a3
         add a3, a3, a2
         sltu a2, a3, a2
-        add a4, a4, a2 # a4:a3 + a2
-		
-
-        li a2, -1
-        sw a2, 0(a1)
+        add a4, a4, a2
         sw a4, 4(a1)
         sw a3, 0(a1)
-        # raise a supervisor software interrupt.
-        
-		li a1, 2
-        csrw sip, a1
 		
+        # arrange for a supervisor software interrupt
+        # after this handler returns.
+        li a1, 2
+        csrw sip, a1
+
         lw a4, 12(a0)
         lw a3, 8(a0)
         lw a2, 4(a0)

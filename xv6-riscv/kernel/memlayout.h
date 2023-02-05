@@ -25,12 +25,12 @@
 #define VIRTIO0 0x10001000
 #define VIRTIO0_IRQ 1
 
-// local interrupt controller, which contains the timer.
+// core local interruptor (CLINT), which contains the timer.
 #define CLINT 0x2000000L
 #define CLINT_MTIMECMP(hartid) (CLINT + 0x4000 + 8*(hartid))
 #define CLINT_MTIME (CLINT + 0xBFF8) // cycles since boot.
 
-// qemu puts programmable interrupt controller here.
+// qemu puts platform-level interrupt controller (PLIC) here.
 #define PLIC 0x0c000000L
 #define PLIC_PRIORITY (PLIC + 0x0)
 #define PLIC_PENDING (PLIC + 0x1000)
@@ -49,7 +49,7 @@
 
 // map the trampoline page to the highest address,
 // in both user and kernel space.
-#define TRAMPOLINE (MAXVA - PGSIZE + 1) // HACK FOR 32 BIT
+#define TRAMPOLINE (MAXVA - PGSIZE + 1)
 
 // map kernel stacks beneath the trampoline,
 // each surrounded by invalid guard pages.
@@ -62,6 +62,6 @@
 //   fixed-size stack
 //   expandable heap
 //   ...
-//   TRAPFRAME (p->tf, used by the trampoline)
+//   TRAPFRAME (p->trapframe, used by the trampoline)
 //   TRAMPOLINE (the same page as in the kernel)
 #define TRAPFRAME (TRAMPOLINE - PGSIZE)

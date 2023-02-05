@@ -10,8 +10,8 @@ void timerinit();
 // entry.S needs one stack per CPU.
 __attribute__ ((aligned (16))) char stack0[4096 * NCPU];
 
-// scratch area for timer interrupt, one per CPU.
-uint32 mscratch0[NCPU * 32];
+// a scratch area per CPU for machine-mode timer interrupts.
+uint32 timer_scratch[NCPU][6];
 
 // assembly code in kernelvec.S for machine-mode timer interrupt.
 extern void timervec();
@@ -21,7 +21,7 @@ void
 start()
 {
   // set M Previous Privilege mode to Supervisor, for mret.
-  unsigned int x = r_mstatus();
+  unsigned long x = r_mstatus();
   x &= ~MSTATUS_MPP_MASK;
   x |= MSTATUS_MPP_S;
   w_mstatus(x);
@@ -36,6 +36,12 @@ start()
   // delegate all interrupts and exceptions to supervisor mode.
   w_medeleg(0xffff);
   w_mideleg(0xffff);
+  w_sie(r_sie() | SIE_SEIE | SIE_STIE | SIE_SSIE);
+
+  // configure Physical Memory Protection to give supervisor mode
+  // access to all of physical memory.
+  //w_pmpaddr0(0x3fffffffffffffull);
+  //w_pmpcfg0(0xf);
 
   // ask for clock interrupts.
   timerinit();
@@ -48,8 +54,9 @@ start()
   asm volatile("mret");
 }
 
-// set up to receive timer interrupts in machine mode,
-// which arrive at timervec in kernelvec.S,
+// arrange to receive timer interrupts.
+// they will arrive in machine mode at
+// at timervec in kernelvec.S,
 // which turns them into software interrupts for
 // devintr() in trap.c.
 void
@@ -59,14 +66,14 @@ timerinit()
   int id = r_mhartid();
 
   // ask the CLINT for a timer interrupt.
-  uint32 interval =  1000000; // cycles; about 1/10th second in qemu.
+  int interval = 1000000; // cycles; about 1/10th second in qemu.
   *(uint64*)CLINT_MTIMECMP(id) = *(uint64*)CLINT_MTIME + interval;
 
   // prepare information in scratch[] for timervec.
-  // scratch[0..3] : space for timervec to save registers.
-  // scratch[4] : address of CLINT MTIMECMP register.
-  // scratch[5] : desired interval (in cycles) between timer interrupts.
-  uint32 *scratch = &mscratch0[32 * id];
+  // scratch[0..2] : space for timervec to save registers.
+  // scratch[3] : address of CLINT MTIMECMP register.
+  // scratch[4] : desired interval (in cycles) between timer interrupts.
+  uint32 *scratch = &timer_scratch[id][0];
   scratch[4] = CLINT_MTIMECMP(id);
   scratch[5] = interval;
   w_mscratch((uint32)scratch);

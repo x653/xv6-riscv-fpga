@@ -54,9 +54,9 @@ uartinit(void)
 {
   // disable interrupts.
   WriteReg(IER, 0x00);
-
+  
   // special mode to set baud rate.
-  WriteReg(LCR, 0x80);
+  WriteReg(LCR, LCR_BAUD_LATCH);
 
   // LSB for baud rate of 38.4K.
   WriteReg(0, 32000000/115200 & 0xff);
@@ -70,9 +70,9 @@ uartinit(void)
 
   // reset and enable FIFOs.
   WriteReg(FCR, 0x07);
-  
-  // enable receive interrupts.
-  WriteReg(IER, 0x01);
+
+  // enable transmit and receive interrupts.
+  WriteReg(IER, IER_TX_ENABLE | IER_RX_ENABLE);
 
   initlock(&uart_tx_lock, "uart");
 }
@@ -136,6 +136,7 @@ uartstart()
   while(1){
     if(uart_tx_w == uart_tx_r){
       // transmit buffer is empty.
+      ReadReg(ISR);
       return;
     }
     
@@ -188,3 +189,4 @@ uartintr(void)
   uartstart();
   release(&uart_tx_lock);
 }
+

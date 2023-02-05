@@ -36,7 +36,11 @@ module uart(
 		if (i_rst) THE <= 1;
 		else if (thr_load) THE <= 0;
 		else if (tsr_load) THE <= 1;
-
+	reg THE_old;
+	always @(posedge i_clk)
+		if (i_rst) THE_old <= 1;
+		else THE_old <= THE;
+	
 	//TSR Transmitter shifting register	
 	reg [11:0] TSR;
 	always @(posedge i_clk)
@@ -121,7 +125,7 @@ module uart(
 		else if (i_stb & (~|i_we) & addr_is0) DR <= 0;
 	
 	//output
-	wire addr_is0 = ~DLA & (i_addr == 3'd0);//(i_addr == 3'd0); //Receive buffer / Transmit holding register
+	wire addr_is0 = ~DLA & (i_addr == 3'd0); //(i_addr == 3'd0); //Receive buffer / Transmit holding register
 	wire addr_is1 = ~DLA & (i_addr == 3'd1); // Interrupt enable
 	wire addr_is2 =        (i_addr == 3'd2); // Interrupt identification
 	wire addr_is3 =        (i_addr == 3'd3); // Line control
@@ -132,7 +136,7 @@ module uart(
 	assign o_dat_r = i_addr[2] ?
 				{16'd0,1'b0,THE,TSE,4'd0,DR,8'd0}: //reg 7 6 5 4
 				(DLA? {16'd0,DL}:				   //reg x x 9 8
-					  {DLA,7'd0,5'd0,IID,IIP,6'd0,TRE,EDA,RBR});    //reg 3 2 1 0
+					  {DLA,7'd0,5'd0,IID2,IID1,IIP,6'd0,TRE,EDA,RBR});    //reg 3 2 1 0
 
 	// interrupt logic
 	// Register 1
@@ -147,8 +151,13 @@ module uart(
 		else if (i_stb & i_we[1] & addr_is1) TRE <= i_dat_w[9];
 
 	//Register 2
-	wire IIP = ~|IID;// Inverted Interrupt pending (0 - means pending)
-	wire [1:0] IID = {EDA&DR,TRE&THE}; //Interrupt ID [received data available,transmit hold empty]
+	wire IIP = ~(IID1|IID2);// Inverted Interrupt pending (0 - means pending)
+	wire IID2 = EDA&DR;
+	reg IID1;
+	always @(posedge i_clk)
+		if (i_rst) IID1 <= 0;
+		else if (IID1 & (thr_load |(i_stb & (~|i_we) & addr_is2) )) IID1 <= 0;
+		else if (~IID1 & ~THE_old & THE & TRE) IID1 <= 1;
 
 	assign o_int = ~IIP;
 

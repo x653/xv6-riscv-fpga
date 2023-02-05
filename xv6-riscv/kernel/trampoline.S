@@ -1,15 +1,19 @@
-	#
-        # code to switch between user and kernel space.
         #
-        # this code is mapped at the same virtual address
-        # (TRAMPOLINE) in user and kernel space so that
-        # it continues to work when it switches page tables.
-	#
-	# kernel.lw causes this to be aligned
-        # to a page boundary.
+        # low-level code to handle traps from user space into
+        # the kernel, and returns from kernel to user.
+        #
+        # the kernel maps the page holding this code
+        # at the same virtual address (TRAMPOLINE)
+        # in user and kernel space so that it continues
+        # to work when it switches page tables.
+        # kernel.ld causes this code to start at 
+        # a page boundary.
         #
 
-	.section trampsec
+#include "riscv.h"
+#include "memlayout.h"
+
+.section trampsec
 .globl trampoline
 trampoline:
 .align 4
@@ -21,14 +25,16 @@ uservec:
         # in supervisor mode, but with a
         # user page table.
         #
-        # sscratch points to where the process's p->tf is
-        # mapped into user space, at TRAPFRAME.
-        #
-        
-	# swap a0 and sscratch
-        # so that a0 is TRAPFRAME
-        csrrw a0, sscratch, a0
 
+        # save user a0 in sscratch so
+        # a0 can be used to get at TRAPFRAME.
+        csrw sscratch, a0
+
+        # each process has a separate p->trapframe memory area,
+        # but it's mapped to the same virtual address
+        # (TRAPFRAME) in every process's user page table.
+        li a0, TRAPFRAME
+        
         # save the user registers in TRAPFRAME
         sw ra, 20(a0)
         sw sp, 24(a0)
@@ -61,46 +67,49 @@ uservec:
         sw t5, 136(a0)
         sw t6, 140(a0)
 
-	# save the user a0 in p->tf->a0
+	# save the user a0 in p->trapframe->a0
         csrr t0, sscratch
         sw t0, 56(a0)
 
-        # restore kernel stack pointer from p->tf->kernel_sp
+        # initialize kernel stack pointer, from p->trapframe->kernel_sp
         lw sp, 4(a0)
 
-        # make tp holw the current hartid, from p->tf->kernel_hartid
+        # make tp hold the current hartid, from p->trapframe->kernel_hartid
         lw tp, 16(a0)
 
-        # load the address of usertrap(), p->tf->kernel_trap
+        # load the address of usertrap(), from p->trapframe->kernel_trap
         lw t0, 8(a0)
 
-        # restore kernel page table from p->tf->kernel_satp
+
+        # fetch the kernel page table address, from p->trapframe->kernel_satp.
         lw t1, 0(a0)
-        csrw satp, t1
+
+        # wait for any previous memory operations to complete, so that
+        # they use the user page table.
         sfence.vma zero, zero
 
-        # a0 is no longer valid, since the kernel page
-        # table does not specially map p->tf.
+        # install the kernel page table.
+        csrw satp, t1
+
+        # flush now-stale user entries from the TLB.
+        sfence.vma zero, zero
 
         # jump to usertrap(), which does not return
         jr t0
 
 .globl userret
 userret:
-        # userret(TRAPFRAME, pagetable)
+        # userret(pagetable)
+        # called by usertrapret() in trap.c to
         # switch from kernel to user.
-        # usertrapret() calls here.
-        # a0: TRAPFRAME, in user page table.
-        # a1: user page table, for satp.
+        # a0: user page table, for satp.
 
         # switch to the user page table.
-        csrw satp, a1
+        sfence.vma zero, zero
+        csrw satp, a0
         sfence.vma zero, zero
 
-        # put the saved user a0 in sscratch, so we
-        # can swap it with our a0 (TRAPFRAME) in the last step.
-        lw t0, 56(a0)
-        csrw sscratch, t0
+        li a0, TRAPFRAME
 
         # restore all but a0 from TRAPFRAME
         lw ra, 20(a0)
@@ -134,8 +143,8 @@ userret:
         lw t5, 136(a0)
         lw t6, 140(a0)
 
-	# restore user a0, and save TRAPFRAME in sscratch
-        csrrw a0, sscratch, a0
+	# restore user a0
+        lw a0, 56(a0)
         
         # return to user mode and user pc.
         # usertrapret() set up sstatus and sepc.

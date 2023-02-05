@@ -20,3 +20,4 @@ xv6-riscv/user/usys.S
 *.d
 *.asc
 *.json
+*.vcd
