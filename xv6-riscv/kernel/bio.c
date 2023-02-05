@@ -22,7 +22,7 @@
 #include "defs.h"
 #include "fs.h"
 #include "buf.h"
-#include "disk.h"
+#include "sdcard.h"
 
 struct {
   struct spinlock lock;

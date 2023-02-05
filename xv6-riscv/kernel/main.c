@@ -3,7 +3,7 @@
 #include "memlayout.h"
 #include "riscv.h"
 #include "defs.h"
-#include "disk.h"
+#include "sdcard.h"
 
 volatile static int started = 0;
 
