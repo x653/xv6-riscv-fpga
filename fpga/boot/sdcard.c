@@ -16,22 +16,22 @@ void sdsleep(unsigned int d){
 
 char spi_rw(char c)
 {	
-	volatile char *p = (char*)0x20000000;
+	volatile char *p = (char*)0x10001000;
 	*p = c;
 	return *p;
 }
 
 char spi_cmd(char cmd,char arg0, char arg1, char arg2, char arg3, char crc){
-	*(volatile char*)0x20000000 = 255;
-	*(volatile char*)0x20000000 = 64|cmd;
-	*(volatile char*)0x20000000 = arg0;
-	*(volatile char*)0x20000000 = arg1;
-	*(volatile char*)0x20000000 = arg2;
-	*(volatile char*)0x20000000 = arg3;
-	*(volatile char*)0x20000000 = crc;
+	*(volatile char*)0x10001000 = 255;
+	*(volatile char*)0x10001000 = 64|cmd;
+	*(volatile char*)0x10001000 = arg0;
+	*(volatile char*)0x10001000 = arg1;
+	*(volatile char*)0x10001000 = arg2;
+	*(volatile char*)0x10001000 = arg3;
+	*(volatile char*)0x10001000 = crc;
 	int i=0;
 	while((i<10) && (spi_rw(255)==255)) ++i;
-	return *(volatile char*)0x20000000;
+	return *(volatile char*)0x10001000;
 }
 
 unsigned int spi_r(){
@@ -44,15 +44,15 @@ unsigned int spi_r(){
 
 int spi_init(){
 	sdsleep(1000);
-	*(volatile char*)0x20000004 = 1;
+	*(volatile char*)0x10001004 = 1;
 	for (int i=0;i<100;++i){
 		sdsleep(1);
-		*(volatile char*)0x20000004 = 3;
+		*(volatile char*)0x10001004 = 3;
 		sdsleep(1);
-		*(volatile char*)0x20000004 = 1;
+		*(volatile char*)0x10001004 = 1;
 	}
 	sdsleep(1);
-	*(volatile char*)0x20000004 = 2;
+	*(volatile char*)0x10001004 = 2;
 
 	spi_cmd(0,0,0,0,0,149);
 	spi_cmd(8,0,0,1,170,135);
@@ -61,7 +61,7 @@ int spi_init(){
 		sdsleep(100000);
 		spi_cmd(55,0,0,0,0,0);
 		spi_cmd(41,0x40,0,0,0,0);
-		if (*(volatile char*)0x20000000 == 0) break;
+		if (*(volatile char*)0x10001000 == 0) break;
 	}
 	spi_cmd(58,0,0,0,0,0);
 	int ocr=spi_r();

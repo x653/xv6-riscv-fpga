@@ -73,7 +73,7 @@ void main(void)
 	printf("0x02000000 CLINT\n");
 	printf("0x0C000000 PLIC\n");
 	printf("0x10000000 UART\n");
-	printf("0x20000000 SD-CARD\n");
+	printf("0x10001000 SD-CARD\n");
 	printf("0x80000000 RAM (512 KB)\n\n");
 	
 	for (int i=0x80000000;i<0x80080000;i+=4){

@@ -37,13 +37,13 @@ wire        sba_ack;
 //       0200BFF8 - MTIME
 // PLIC  0C000000
 // UART  10000000 - 10000007 (8 b)
-// SPI   20000000
+// SPI   10001000
 // SRAM  80000000 - 80080000 (512 kb)
 wire addr_is_bram =  (sba_addr[31:24]==8'h00);
 wire addr_is_clint = (sba_addr[31:24]==8'h02);
 wire addr_is_plic  = (sba_addr[31:24]==8'h0C);
-wire addr_is_uart =  (sba_addr[31:24]==8'h10);
-wire addr_is_spi  =  (sba_addr[31:24]==8'h20);
+wire addr_is_uart =  (sba_addr[31:12]==20'h10000);
+wire addr_is_spi  =  (sba_addr[31:12]==20'h10001);
 wire addr_is_sram =  (sba_addr[31:24]==8'h80);
 
 assign sba_ack = addr_is_bram ? bram_ack:
