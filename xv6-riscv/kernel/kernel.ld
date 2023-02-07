@@ -23,10 +23,12 @@ SECTIONS
    */
   .data : {
     *(.data)
+    *(.sdata)
   }
   .bss : {
     *(.bss)
-    *(.sbss*)
-     PROVIDE(end = .);
+    *(.sbss)
   }
+  . = ALIGN(0x1000);
+  PROVIDE(end = .);
 }
