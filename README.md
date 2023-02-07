@@ -2,6 +2,10 @@
 
 Build a RISC-V computer system on fpga iCE40HX8K-EVB and run UNIX xv6 using only FOSS (free and open source hard- and software).
 
+# install riscv toolchain
+https://github.com/stnolting/riscv-gcc-prebuilt
+rv64imc multilib: rv32i
+
 ## Build hardware
 
 ```
