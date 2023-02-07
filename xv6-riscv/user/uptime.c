@@ -10,14 +10,18 @@ main(int argc, char *argv[])
     printf("usage: %s\n",argv[0]);
     exit(1);
   }
-  int t=uptime()/600;
+  int t=uptime()/10;
+  int s1=t%10;
+  t=t/10;
+  int s2=t%6;
+  t=t/6;
   int m1=t%10;
   t=t/10;
   int m2=t%6;
   t=t/6;
   int h=t%24;
   t=t/24;
-  printf("up %d days, %d:%d%d\n",t,h,m2,m1);
+  printf("up %d days, %d:%d%d:%d%d\n",t,h,m2,m1,s2,s1);
   
   exit(0);
 
