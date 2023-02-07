@@ -1,7 +1,0 @@
-
-(define x 5)
-(+ ((lambda (x) (+ x (* x 10))) 3) x)
-
-(define x 2)
-((lambda (x y) (* x y)) 3 (+ x 2))
-

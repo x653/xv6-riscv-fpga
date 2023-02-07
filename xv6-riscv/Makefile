@@ -133,16 +133,21 @@ UPROGS=\
 	$U/_lisp\
 	$U/_mem\
 
+FILES=\
+	$U/_let\
+	$U/_sqrt\
+	$U/_fib\
+
 fs.img: mkfs/mkfs README $(UPROGS)
 	cp kernel/kernel xv6.elf
-	mkfs/mkfs fs.img xv6.elf README fib sqrt let sqrt2 $(UPROGS)
+	mkfs/mkfs fs.img xv6.elf README $(FILES) $(UPROGS)
 
 -include kernel/*.d user/*.d
 
 clean: 
 	rm -f *.tex *.dvi *.idx *.aux *.log *.ind *.ilg \
 	*/*.o */*.d */*.asm */*.sym \
-	$U/initcode $U/initcode.out $K/kernel fs.img \
+	$U/initcode $U/initcode.out $K/kernel xv6.elf fs.img \
 	mkfs/mkfs .gdbinit \
         $U/usys.S \
 	$(UPROGS)
