@@ -8,11 +8,11 @@ struct elfhdr {
   uchar elf[12];
   ushort type;
   ushort machine;
-  uint32 version;
+  uint version;
   uint32 entry;
   uint32 phoff;
   uint32 shoff;
-  uint32 flags;
+  uint flags;
   ushort ehsize;
   ushort phentsize;
   ushort phnum;

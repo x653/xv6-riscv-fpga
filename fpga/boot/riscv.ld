@@ -1,6 +1,6 @@
 
 MEMORY {
-	/* the memory is 8k in size; */
+	/* the memory is 12k in size; */
 	mem : ORIGIN = 0x00000000, LENGTH = 0x00003000
 }
 
