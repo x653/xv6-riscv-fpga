@@ -1,3 +1,25 @@
+/*
+SOC - System on chip
+
+- SBA simple bus architecture
+- RISC-V CPU RV32ia_zicsr
+- BOOR BRAM preloaded with boot loader (12kB)
+- CLINT Core Level Interrupt Controller
+- PLIC Platform Level Interrupt Controller
+- SRAM 512kB
+- UART Universal Asynchronus Receive Transmit controller
+- SPI Serial Peripherial Interface controller (SD-Card) 
+
+Memory map:
+dev   base address  size
+----------------------------------
+BOOT  00000000      12 KByte
+CLINT 02000000      0xFFFF
+PLIC  0C000000      huge
+UART  10000000      8 Byte
+SPI   10001000      5 Byte
+SRAM  80000000      512 KByte
+*/
 
 `default_nettype none
 module soc(
@@ -29,16 +51,6 @@ wire [31:0] sba_dat_r;
 wire [31:0] sba_dat_w;
 wire        sba_ack;
 
-// SBA Address space
-// ----------------------------------
-// BRAM  00000000 - 00002000 (8 kb)
-// CLINT 02000000
-//       02004000 - MTIMECMP
-//       0200BFF8 - MTIME
-// PLIC  0C000000
-// UART  10000000 - 10000007 (8 b)
-// SPI   10001000
-// SRAM  80000000 - 80080000 (512 kb)
 wire addr_is_bram =  (sba_addr[31:24]==8'h00);
 wire addr_is_clint = (sba_addr[31:24]==8'h02);
 wire addr_is_plic  = (sba_addr[31:24]==8'h0C);
@@ -81,7 +93,7 @@ rv32 RV32(
 	.i_seip(plic_ext_int_s)
 );
    
-// BRAM 8 kb of ram preloaded with firmware   
+// BRAM 12 kb of ram preloaded with boot loader
 reg [31:0] BRAM[0:(RAM_SIZE/4)-1];
 initial $readmemh("firmware.hex",BRAM); 
 wire bram_stb = addr_is_bram & sba_stb;
@@ -176,6 +188,7 @@ uart UART(
 	.i_rx(i_uart_rx),
 	.o_int(uart_int)
 );
+
 //SPI (SD Card)
 wire [31:0] spi_dat_r;
 wire spi_ack;

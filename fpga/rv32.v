@@ -1,3 +1,12 @@
+/*
+RISC-V CPU RV32ia_zicsr
+- 32 bit version
+- integer
+- atomic instructions
+- control and status register
+- privileged modes (machine,supervisor, user)
+- virtual memory mapping
+*/
 `default_nettype none
 
 module rv32(
@@ -15,8 +24,14 @@ module rv32(
 	input      		i_meip,
 	input			i_seip
 );
+
+// privileged mode is ouput to LED
+// 00 - U user mode
+// 01 - S supervisor mode
+// 11 - M machine mode
 assign o_led=privileged_mode;
-//#### Parameter ##########################################
+
+// start boot loader at 0x00000000
 parameter RESET_ADDR       = 32'h00000000;
 
 //#### state of CPU #######################################

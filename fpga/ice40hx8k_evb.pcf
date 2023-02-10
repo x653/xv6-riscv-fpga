@@ -1,14 +1,18 @@
-set_io clk J3
+# pyhsical contraints file
+# iCE40HX8K-EVB board
 
-set_io led[0] M12
-set_io led[1] R16
+set_io clk J3		# clock 100 MHz
 
-set_io uart_tx T16 
-set_io uart_rx L11 
+set_io led[0] M12	# LED1
+set_io led[1] R16   # LED2
 
-set_io but[0]	K11
-set_io but[1]	P13
+set_io but[0] K11   # BUT1
+set_io but[1] P13   # BUT2
 
+set_io uart_tx T16  # UART-TX on UEXT connector
+set_io uart_rx L11  # UART-RX on UEXT connector
+
+# SRAM chip 512k byte organized as 256k * 16 bit.
 set_io sram_a[0] N6
 set_io sram_a[1] T1
 set_io sram_a[2] P4
@@ -45,11 +49,12 @@ set_io sram_d[13] T11
 set_io sram_d[14] T15
 set_io sram_d[15] T14
 
-set_io sram_csn T6
-set_io sram_oen L9
-set_io sram_wen T7
+set_io sram_csn T6		# SRAM chip enabled not
+set_io sram_oen L9      # SRAM output enabled not
+set_io sram_wen T7      # SRAM write enabled not
 
-set_io sd_miso R14 #E4
-set_io sd_mosi P15 #B2
-set_io sd_sck P14 #F5
-set_io sd_ss R15 #B1
+# SD CARD connected to JTAG connector
+set_io sd_miso R14      # TDI data in
+set_io sd_mosi P15      # TDO data out
+set_io sd_sck P14       # TCK serial clock
+set_io sd_ss R15        # TMS chip enabled not

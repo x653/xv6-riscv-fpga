@@ -1,3 +1,9 @@
+/*
+top - Top level module implements:
+- reset
+- PLL
+- SOC
+*/
 `default_nettype none
 module top(
    input wire clk,

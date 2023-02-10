@@ -2,21 +2,91 @@
 
 Build a RISC-V computer system on fpga iCE40HX8K-EVB and run UNIX xv6 using only FOSS (free and open source hard- and software).
 
-# install riscv toolchain
-https://github.com/stnolting/riscv-gcc-prebuilt
-rv64imc multilib: rv32i
+xv6-riscv is a simple educational UNIX operating system written in ANSI-C developed and used at MIT in courses to teach operating systems. The original code is implemented for RISC-V 64 bit CPU.
 
-## Build hardware
+In this project we will build a minimal computer system based on an fpga board capable of running UNIX xv6. We will implement only the smaller 32 bit version of RISC-V CPU and we will drop all features not explicit needed to run xv6, like floating point operation and even multiplication in hardware. The remaining core is called rv32ia_zicsr and implements only a minimal command set:
+
+- I: Integer and logic computation
+
+- A: atomic commands
+
+- zicsr: control register
+
+- privileged modes (M/S/U): machine mode, supervisor mode and user mode
+
+- virtual memory mapping
+
+Although our CPU does not implement multiplication and floating point operation in hardware, we will see, that all this can be done in software by linking the appropriate gcc librarys. The final computer will be able to boot UNIX xv6 and even run a homemade LISP interpreter, which is cabable of doing numerical computations even on floating point numbers.
+
+## 01_hardware
+
+The hardware consists of three little boards available at Olimex Ltd.
+
+* iCE40HX8K-EVB: This development board contains the fpga chip iCE40HX8K plus a 512k Byte memory chip used as RAM.
+
+* Olimexino 32u4: This arduino like board is used
+  
+  1. as programmer, to upload the fpga bitstream file to the iCE40HX8K-EVB board.
+  
+  2. as UART bridge, to connect a terminal to the RISCV-V CPU running UNIX xv6.
+
+* SD-CARD: This little board holds an SD-Card containing the complete file system of UNIX xv6.
+
+Connect the three boards according to the following schematic:
+
+## 02_gcc-toolchain
+
+The toolchain with c-compiler can be downloaded from the following site. In order to be able to build code for the rv32ia_zicsr version we need a toolchain with multilib and gcc-libary implementation for rv32i.
+
+Attention: Download rv64imc with multilib rv32i !
+
+[GitHub - stnolting/riscv-gcc-prebuilt: 📦 Prebuilt RISC-V GCC toolchains for x64 Linux.](https://github.com/stnolting/riscv-gcc-prebuilt)
+
+## 04_apio
+
+The fpga iCE40HX8K has the nice property, that it can be programmed with FOSS free and open source software. This can be done with the toolchain project icestorm provided by Clifford Wold. Apio is a python package based on project icestorm, which provides a easy to use command line utility to facilitate fpga developement.
+
+* Install apio
+
+```
+$ pip install -U apio
+```
+
+
+
+## 03_firmware
+
+Build the firmware, which implements a bootloader, that reads the SD-CARD. The bootloader than seaches for an ELF file containing the kernel xv6. Loads the kernel into memory and starts the kernel. 
+
+```
+$ cd fpga/boot
+$ make
+```
+
+## 04_fpga
+
+The fpga iCE40HX8K contains the whole hardware of our computer system:
+
+* CPU: RV32ia_zicsr
+
+* BOOT: Memory preloaded with bootloader
+
+* UART: Connects the terminal to xv6 shell
+
+* SPI: Connects the SD-Card containing the file system
+
+To build the fpga hardware connect your computer with the programmer Olimexino 32u4 and run:
 
 ```
 $ cd fpga
-$ cd boot
-$ make
-$ cd ..
+$ apio clean
+$ apio build
 $ apio upload
 ```
 
-## Build software
+## 05_software
+
+Build the software, composed of kernel and user programms and write everything on the file system. 
 
 ```
 $ cd xv6-riscv
@@ -24,7 +94,9 @@ $ make
 $ make fs.img
 ```
 
-## Run UNIX xv6 on RISC-V
+## 06_Run UNIX xv6 on RISC-V
+
+Now connect to RV32ia_zicsr with USB and start a terminal session (i.e. tio). Start RV32ia_zicsr and see the welcome message. Insert the SD-Card into the reader and see if RV32 can boot UNIX xv6 from the file system.
 
 ```
 $ tio -m INLCRNL /dev/ttyACM0
@@ -58,7 +130,9 @@ init: starting sh
 $ 
 ```
 
-## Run ls and cat
+## 07_user programs
+
+Now that you have access to the shell you can launch UNIX commands.
 
 ```
 $ ls
@@ -138,7 +212,9 @@ search path, you can run "make qemu".
 $ 
 ```
 
-## Run lisp on xv6 on RISC-V
+## 09_Run LISP on xv6 on RISC-V
+
+and even run LISP on a computer system that runs UNIX on a home made CPU! 
 
 ```
 $ lisp

@@ -1,3 +1,8 @@
+/*
+VMA - Virtual Memory Access
+
+Implements RISC-V virtual memory mapping Sv32
+*/
 `default_nettype none
 module vma(
 	input		i_clk,
