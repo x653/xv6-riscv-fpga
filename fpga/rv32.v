@@ -32,7 +32,7 @@ module rv32(
 assign o_led=privileged_mode;
 
 // start boot loader at 0x00000000
-parameter RESET_ADDR       = 32'h00000000;
+parameter RESET_ADDR       = 32'h00001000;
 
 //#### state of CPU #######################################
 reg r_stb;					//strobe signal to sba bus

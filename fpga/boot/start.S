@@ -1,7 +1,7 @@
 .section .text
 .global main
-.global _start
-_start:	addi x1, zero, 0
+.global _entry
+_entry:	addi x1, zero, 0
 		addi x2, zero, 0
 		addi x3, zero, 0
 		addi x4, zero, 0
@@ -32,7 +32,7 @@ _start:	addi x1, zero, 0
 		addi x29, zero, 0
 		addi x30, zero, 0
 		addi x31, zero, 0
-		li sp, 0x00003000  //stackpointer in ram
+		li sp, 0x00004000  //stackpointer in ram
 		call main
 //		li sp, 0x80080000  //stackpointer in ram
 //		li ra,0x80000000

@@ -13,7 +13,7 @@ SOC - System on chip
 Memory map:
 dev   base address  size
 ----------------------------------
-BOOT  00000000      12 KByte
+BOOT  00001000      12 KByte
 CLINT 02000000      0xFFFF
 PLIC  0C000000      huge
 UART  10000000      8 Byte
@@ -38,8 +38,6 @@ module soc(
 	output o_spi_sck,
 	output o_spi_ss
 );
-
-parameter RAM_SIZE = 16384-4096;
 
 // SBA Simple Bus Architecture
 wire		sba_rst = i_rst;
@@ -94,10 +92,10 @@ rv32 RV32(
 );
    
 // BRAM 12 kb of ram preloaded with boot loader
-reg [31:0] BRAM[0:(RAM_SIZE/4)-1];
+reg [31:0] BRAM[0:3071];
 initial $readmemh("firmware.hex",BRAM); 
 wire bram_stb = addr_is_bram & sba_stb;
-wire [11:0] bram_addr = sba_addr[13:2];
+wire [11:0] bram_addr = sba_addr[13:2]-1024;
 always @(posedge i_clk) begin
 	if(sba_we[0] & bram_stb) BRAM[bram_addr][ 7:0 ] <= sba_dat_w[ 7:0 ];
 	if(sba_we[1] & bram_stb) BRAM[bram_addr][15:8 ] <= sba_dat_w[15:8 ];
