@@ -52,7 +52,7 @@ always @(posedge i_clk)
 //mtimecmp register holds compare value to generate interrupts
 reg [63:0] mtimecmp;
 always @(posedge i_clk)
-	if (i_rst) mtimecmp <= 64'h7fffffff_ffffffff;
+	if (i_rst) mtimecmp <= 0;//64'h7fffffff_ffffffff;
 	else if (addr_is_mtimecmp_l) begin
 		if (i_stb & i_we[0]) mtimecmp[7:0]   <= i_dat_w[7:0];
 		if (i_stb & i_we[1]) mtimecmp[15:8]  <= i_dat_w[15:8];

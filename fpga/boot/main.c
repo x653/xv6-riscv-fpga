@@ -2,7 +2,9 @@
 #include "printf.h"
 #include "types.h"
 #include "fs.h"
-#include "elf.h"
+#include "elf32.h"
+
+extern void* end;
 
 unsigned char buf[BSIZE];
 unsigned int indirect[BSIZE];
@@ -68,7 +70,7 @@ void main(void)
 {
 	uart_init();
 	printf("\n ___ ___ ___  ___  __   __\n| _ \\_ _/ __|/ __|_\\ \\ / /\n|   /| |\\__ \\ (_|___\\ V / \n|_|_\\___|___/\\___|   \\_/  \n\n");
-	printf("Processor: rv32ia @32MHz V1.1\n\n");
+	printf("Processor: rv32ia @32MHz V1.2\n\n");
 	printf("0x00000000 BOOT (12 KB)\n");
 	printf("0x02000000 CLINT\n");
 	printf("0x0C000000 PLIC\n");

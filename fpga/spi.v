@@ -1,3 +1,20 @@
+/*
+SPI - Serial Peripherial Interface
+
+Provides memory mapped registers to control SPI connection to SD-Card
+Base address: 0x10001000
+
+RW:     Write to RW to send 8 bits to SDO with the appropriate SCK pulses
+        Read from RW the last byte received at SDI
+CTR:    Control the control wires:
+        CTR[0] = CSN: Chip Select not
+		CTR[1] = SCK: serial clock
+
+register  offset  size       reset     
+-----------------------------------------
+RW        0x00    8 bits    0x00      
+CTR       0x04    8 bits    0x00
+*/
 `default_nettype none
 
 module spi(
@@ -18,7 +35,7 @@ module spi(
 	wire start;
 	assign start = ready & ~i_addr[2] & i_we & i_stb;
 	always @(posedge i_clk)
-		if (i_rst) o_ss <= 0;
+		if (i_rst) o_ss <= 1;
 		else if (i_stb & i_addr[2] & i_we) o_ss <= i_dat_w[0];
 	
 	reg run;
@@ -57,7 +74,6 @@ module spi(
 		else if (shift) data <= {data[6:0],inLSB};
 
 	assign o_mosi = data[7];
-
 	
 	wire stop;
 	assign stop = bits[3]&bits[2]&bits[1]&o_sck;

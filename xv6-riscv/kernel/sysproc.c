@@ -89,3 +89,10 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+// return number of free memory pages
+uint32
+sys_memory(void)
+{
+  return kmemory();
+}

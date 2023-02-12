@@ -101,6 +101,7 @@ extern uint32 sys_unlink(void);
 extern uint32 sys_link(void);
 extern uint32 sys_mkdir(void);
 extern uint32 sys_close(void);
+extern uint32 sys_memory(void);
 
 // An array mapping syscall numbers from syscall.h
 // to the function that handles the system call.
@@ -126,6 +127,7 @@ static uint32 (*syscalls[])(void) = {
 [SYS_link]    sys_link,
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
+[SYS_memory]  sys_memory,
 };
 
 void

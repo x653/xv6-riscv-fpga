@@ -23,9 +23,9 @@ module top(
 );
 
 //reset
-reg [15:0]	rst_cnt = 0;
+reg [24:0]	rst_cnt = 0;
 wire		rst = ! (& rst_cnt);
-always @(posedge o_clk) rst_cnt <= rst_cnt + {15'd0,rst};
+always @(posedge o_clk) rst_cnt <= rst_cnt + {23'd0,rst};
 
 //PLL   
 wire  o_clk;

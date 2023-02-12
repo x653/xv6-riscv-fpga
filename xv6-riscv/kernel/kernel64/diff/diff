@@ -1,0 +1,739 @@
+###############################################
+../bio.c
+###############################################
+24a25
+> #include "sdcard.h"
+99c100
+<     virtio_disk_rw(b, 0);
+---
+> 	spi_rb(b->blockno,b->data);
+111c112
+<   virtio_disk_rw(b, 1);
+---
+>   spi_wb(b->blockno,b->data);
+
+###############################################
+../buf.h
+###############################################
+10a11
+>   unsigned short CRC16;
+
+###############################################
+../elf.h
+###############################################
+27d26
+<   uint32 flags;
+32a32
+>   uint32 flags;
+
+###############################################
+../entry.S
+###############################################
+13d12
+<         li a0, 1024*4
+16c15
+<         mul a0, a0, a1
+---
+>         slli a0, a1, 12
+
+###############################################
+../fs.h
+###############################################
+6c6
+< #define BSIZE 1024  // block size
+---
+> #define BSIZE  512  // block size
+
+###############################################
+../kernel.ld
+###############################################
+11,13c11,13
+< 
+<   .text : {
+<     *(.text .text.*)
+---
+>   .text :
+>   {
+>     *(.text)
+15d14
+<     _trampoline = .;
+17,19d15
+<     . = ALIGN(0x1000);
+<     ASSERT(. - _trampoline == 0x1000, "error: trampoline larger than one page");
+<     PROVIDE(etext = .);
+22,27c18,19
+<   .rodata : {
+<     . = ALIGN(16);
+<     *(.srodata .srodata.*) /* do not need to distinguish this from .rodata */
+<     . = ALIGN(16);
+<     *(.rodata .rodata.*)
+<   }
+---
+>   . = ALIGN(0x1000);
+>   PROVIDE(etext = .);
+28a21,23
+>   /*
+>    * make sure end is after data and bss.
+>    */
+30,33c25,26
+<     . = ALIGN(16);
+<     *(.sdata .sdata.*) /* do not need to distinguish this from .data */
+<     . = ALIGN(16);
+<     *(.data .data.*)
+---
+>     *(.data)
+>     *(.sdata)
+35d27
+< 
+37,40c29,30
+<     . = ALIGN(16);
+<     *(.sbss .sbss.*) /* do not need to distinguish this from .bss */
+<     . = ALIGN(16);
+<     *(.bss .bss.*)
+---
+>     *(.bss)
+>     *(.sbss)
+42c32
+< 
+---
+>   . = ALIGN(0x1000);
+
+###############################################
+../kernelvec.S
+###############################################
+14c14
+<         addi sp, sp, -256
+---
+>         addi sp, sp, -128
+17,47c17,47
+<         sd ra, 0(sp)
+<         sd sp, 8(sp)
+<         sd gp, 16(sp)
+<         sd tp, 24(sp)
+<         sd t0, 32(sp)
+<         sd t1, 40(sp)
+<         sd t2, 48(sp)
+<         sd s0, 56(sp)
+<         sd s1, 64(sp)
+<         sd a0, 72(sp)
+<         sd a1, 80(sp)
+<         sd a2, 88(sp)
+<         sd a3, 96(sp)
+<         sd a4, 104(sp)
+<         sd a5, 112(sp)
+<         sd a6, 120(sp)
+<         sd a7, 128(sp)
+<         sd s2, 136(sp)
+<         sd s3, 144(sp)
+<         sd s4, 152(sp)
+<         sd s5, 160(sp)
+<         sd s6, 168(sp)
+<         sd s7, 176(sp)
+<         sd s8, 184(sp)
+<         sd s9, 192(sp)
+<         sd s10, 200(sp)
+<         sd s11, 208(sp)
+<         sd t3, 216(sp)
+<         sd t4, 224(sp)
+<         sd t5, 232(sp)
+<         sd t6, 240(sp)
+---
+>         sw ra, 0(sp)
+>         sw sp, 4(sp)
+>         sw gp, 8(sp)
+>         sw tp, 12(sp)
+>         sw t0, 16(sp)
+>         sw t1, 20(sp)
+>         sw t2, 24(sp)
+>         sw s0, 28(sp)
+>         sw s1, 32(sp)
+>         sw a0, 36(sp)
+>         sw a1, 40(sp)
+>         sw a2, 44(sp)
+>         sw a3, 48(sp)
+>         sw a4, 52(sp)
+>         sw a5, 56(sp)
+>         sw a6, 60(sp)
+>         sw a7, 64(sp)
+>         sw s2, 68(sp)
+>         sw s3, 72(sp)
+>         sw s4, 76(sp)
+>         sw s5, 80(sp)
+>         sw s6, 84(sp)
+>         sw s7, 88(sp)
+>         sw s8, 92(sp)
+>         sw s9, 96(sp)
+>         sw s10, 100(sp)
+>         sw s11, 104(sp)
+>         sw t3, 108(sp)
+>         sw t4, 112(sp)
+>         sw t5, 116(sp)
+>         sw t6, 120(sp)
+53,55c53,55
+<         ld ra, 0(sp)
+<         ld sp, 8(sp)
+<         ld gp, 16(sp)
+---
+>         lw ra, 0(sp)
+>         lw sp, 4(sp)
+>         lw gp, 8(sp)
+57,83c57,83
+<         ld t0, 32(sp)
+<         ld t1, 40(sp)
+<         ld t2, 48(sp)
+<         ld s0, 56(sp)
+<         ld s1, 64(sp)
+<         ld a0, 72(sp)
+<         ld a1, 80(sp)
+<         ld a2, 88(sp)
+<         ld a3, 96(sp)
+<         ld a4, 104(sp)
+<         ld a5, 112(sp)
+<         ld a6, 120(sp)
+<         ld a7, 128(sp)
+<         ld s2, 136(sp)
+<         ld s3, 144(sp)
+<         ld s4, 152(sp)
+<         ld s5, 160(sp)
+<         ld s6, 168(sp)
+<         ld s7, 176(sp)
+<         ld s8, 184(sp)
+<         ld s9, 192(sp)
+<         ld s10, 200(sp)
+<         ld s11, 208(sp)
+<         ld t3, 216(sp)
+<         ld t4, 224(sp)
+<         ld t5, 232(sp)
+<         ld t6, 240(sp)
+---
+>         lw t0, 16(sp)
+>         lw t1, 20(sp)
+>         lw t2, 24(sp)
+>         lw s0, 28(sp)
+>         lw s1, 32(sp)
+>         lw a0, 36(sp)
+>         lw a1, 40(sp)
+>         lw a2, 44(sp)
+>         lw a3, 48(sp)
+>         lw a4, 52(sp)
+>         lw a5, 56(sp)
+>         lw a6, 60(sp)
+>         lw a7, 64(sp)
+>         lw s2, 68(sp)
+>         lw s3, 72(sp)
+>         lw s4, 76(sp)
+>         lw s5, 80(sp)
+>         lw s6, 84(sp)
+>         lw s7, 88(sp)
+>         lw s8, 92(sp)
+>         lw s9, 96(sp)
+>         lw s10, 100(sp)
+>         lw s11, 104(sp)
+>         lw t3, 108(sp)
+>         lw t4, 112(sp)
+>         lw t5, 116(sp)
+>         lw t6, 120(sp)
+85c85
+<         addi sp, sp, 256
+---
+>         addi sp, sp, 128
+97,99c97,99
+<         # scratch[0,8,16] : register save area.
+<         # scratch[24] : address of CLINT's MTIMECMP register.
+<         # scratch[32] : desired interval between interrupts.
+---
+>         # scratch[0,4,8,12] : register save area.
+>         # scratch[16] : address of CLINT's MTIMECMP register.
+>         # scratch[20] : desired interval between interrupts.
+102,105c102,106
+<         sd a1, 0(a0)
+<         sd a2, 8(a0)
+<         sd a3, 16(a0)
+< 
+---
+>         sw a1, 0(a0)
+>         sw a2, 4(a0)
+>         sw a3, 8(a0)
+>         sw a4, 12(a0)
+>         
+108,110c109,112
+<         ld a1, 24(a0) # CLINT_MTIMECMP(hart)
+<         ld a2, 32(a0) # interval
+<         ld a3, 0(a1)
+---
+>         lw a1, 16(a0) # CLINT_MTIMECMP(hart)
+>         lw a2, 20(a0) # interval
+>         lw a3, 0(a1)
+>         lw a4, 4(a1) # timecmp a4:a3
+112,113c114,118
+<         sd a3, 0(a1)
+< 
+---
+>         sltu a2, a3, a2
+>         add a4, a4, a2
+>         sw a4, 4(a1)
+>         sw a3, 0(a1)
+> 		
+119,121c124,127
+<         ld a3, 16(a0)
+<         ld a2, 8(a0)
+<         ld a1, 0(a0)
+---
+>         lw a4, 12(a0)
+>         lw a3, 8(a0)
+>         lw a2, 4(a0)
+>         lw a1, 0(a0)
+
+###############################################
+../main.c
+###############################################
+5a6
+> #include "sdcard.h"
+30c31,32
+<     virtio_disk_init(); // emulated hard disk
+---
+> 	spi_init();
+> //    virtio_disk_init(); // emulated hard disk
+
+###############################################
+../memlayout.h
+###############################################
+48c48
+< #define PHYSTOP (KERNBASE + 1024*1024)
+---
+> #define PHYSTOP (KERNBASE + 512*1024)
+52c52
+< #define TRAMPOLINE (MAXVA - PGSIZE)
+---
+> #define TRAMPOLINE (MAXVA - PGSIZE + 1)
+
+###############################################
+../param.h
+###############################################
+1,6c1,6
+< #define NPROC        64  // maximum number of processes
+< #define NCPU          8  // maximum number of CPUs
+< #define NOFILE       16  // open files per process
+< #define NFILE       100  // open files per system
+< #define NINODE       50  // maximum number of active i-nodes
+< #define NDEV         10  // maximum major device number
+---
+> #define NPROC         8  // maximum number of processes
+> #define NCPU          1  // maximum number of CPUs
+> #define NOFILE        8  // open files per process
+> #define NFILE         8  // open files per system
+> #define NINODE        8  // maximum number of active i-nodes
+> #define NDEV          8  // maximum major device number
+8,13c8,13
+< #define MAXARG       32  // max exec arguments
+< #define MAXOPBLOCKS  10  // max # of blocks any FS op writes
+< #define LOGSIZE      (MAXOPBLOCKS*3)  // max data blocks in on-disk log
+< #define NBUF         (MAXOPBLOCKS*3)  // size of disk block cache
+< #define FSSIZE       2000  // size of file system in blocks
+< #define MAXPATH      128   // maximum file path name
+---
+> #define MAXARG       16  // max exec arguments
+> #define MAXOPBLOCKS  16  // max # of blocks any FS op writes
+> #define LOGSIZE      (MAXOPBLOCKS)  // max data blocks in on-disk log
+> #define NBUF         (MAXOPBLOCKS)  // size of disk block cache
+> #define FSSIZE       80000  // size of file system in blocks
+> #define MAXPATH      32   // maximum file path name
+
+###############################################
+../plic.c
+###############################################
+16c16
+<   *(uint32*)(PLIC + VIRTIO0_IRQ*4) = 1;
+---
+>   //*(uint32*)(PLIC + VIRTIO0_IRQ*4) = 1;
+26c26
+<   *(uint32*)PLIC_SENABLE(hart) = (1 << UART0_IRQ) | (1 << VIRTIO0_IRQ);
+---
+>   *(uint32*)PLIC_SENABLE(hart) = (1 << UART0_IRQ);// | (1 << VIRTIO0_IRQ);
+
+###############################################
+../proc.c
+###############################################
+223c223
+<   0x97, 0x05, 0x00, 0x00, 0x93, 0x85, 0x35, 0x02,
+---
+>   0x97, 0x05, 0x00, 0x00, 0x93, 0x85, 0x45, 0x02,
+227c227
+<   0x74, 0x00, 0x00, 0x24, 0x00, 0x00, 0x00, 0x00,
+---
+>   0x74, 0x00, 0x00, 0x00, 0x24, 0x00, 0x00, 0x00,
+663c663
+<   [USED]      "used",
+---
+>   [USED]      "used  ",
+
+###############################################
+../riscv.h
+###############################################
+199,202c199,200
+< // use riscv's sv39 page table scheme.
+< #define SATP_SV39 (8L << 60)
+< 
+< #define MAKE_SATP(pagetable) (SATP_SV39 | (((uint32)pagetable) >> 12))
+---
+> // use riscv's sv32 page table scheme.
+> #define SATP_SV32 (1L << 31)
+203a202
+> #define MAKE_SATP(pagetable) (SATP_SV32 | (((uint32)pagetable) >> 12)) // 32 bit
+331c330
+< typedef uint32 *pagetable_t; // 512 PTEs
+---
+> typedef uint32 *pagetable_t; // 1024 PTEs
+354,356c353,355
+< // extract the three 9-bit page table indices from a virtual address.
+< #define PXMASK          0x1FF // 9 bits
+< #define PXSHIFT(level)  (PGSHIFT+(9*(level)))
+---
+> // extract the three 10-bit page table indices from a virtual address.
+> #define PXMASK          0x3FF // 10 bits
+> #define PXSHIFT(level)  (PGSHIFT+(10*(level)))
+363c362
+< #define MAXVA (1L << (9 + 9 + 9 + 12 - 1))
+---
+> #define MAXVA 0xFFFFFFFF
+
+###############################################
+../start.c
+###############################################
+14c14
+< uint32 timer_scratch[NCPU][5];
+---
+> uint32 timer_scratch[NCPU][6];
+43,44c43,44
+<   w_pmpaddr0(0x3fffffffffffffull);
+<   w_pmpcfg0(0xf);
+---
+>   //w_pmpaddr0(0x3fffffffffffffull);
+>   //w_pmpcfg0(0xf);
+69,70c69,70
+<   int interval = 1000000; // cycles; about 1/10th second in qemu.
+<   *(uint32*)CLINT_MTIMECMP(id) = *(uint32*)CLINT_MTIME + interval;
+---
+>   int interval = 3200000; // cycles; about 1/10th second in qemu.
+>   *(uint64*)CLINT_MTIMECMP(id) = *(uint64*)CLINT_MTIME + interval;
+77,78c77,78
+<   scratch[3] = CLINT_MTIMECMP(id);
+<   scratch[4] = interval;
+---
+>   scratch[4] = CLINT_MTIMECMP(id);
+>   scratch[5] = interval;
+
+###############################################
+../stat.h
+###############################################
+10c10
+<   uint32 size; // Size of file in bytes
+---
+>   uint64 size; // Size of file in bytes
+
+###############################################
+../swtch.S
+###############################################
+10,23c10,23
+<         sd ra, 0(a0)
+<         sd sp, 8(a0)
+<         sd s0, 16(a0)
+<         sd s1, 24(a0)
+<         sd s2, 32(a0)
+<         sd s3, 40(a0)
+<         sd s4, 48(a0)
+<         sd s5, 56(a0)
+<         sd s6, 64(a0)
+<         sd s7, 72(a0)
+<         sd s8, 80(a0)
+<         sd s9, 88(a0)
+<         sd s10, 96(a0)
+<         sd s11, 104(a0)
+---
+>         sw ra, 0(a0)
+>         sw sp, 4(a0)
+>         sw s0, 8(a0)
+>         sw s1, 12(a0)
+>         sw s2, 16(a0)
+>         sw s3, 20(a0)
+>         sw s4, 24(a0)
+>         sw s5, 28(a0)
+>         sw s6, 32(a0)
+>         sw s7, 36(a0)
+>         sw s8, 40(a0)
+>         sw s9, 44(a0)
+>         sw s10, 48(a0)
+>         sw s11, 52(a0)
+25,38c25,38
+<         ld ra, 0(a1)
+<         ld sp, 8(a1)
+<         ld s0, 16(a1)
+<         ld s1, 24(a1)
+<         ld s2, 32(a1)
+<         ld s3, 40(a1)
+<         ld s4, 48(a1)
+<         ld s5, 56(a1)
+<         ld s6, 64(a1)
+<         ld s7, 72(a1)
+<         ld s8, 80(a1)
+<         ld s9, 88(a1)
+<         ld s10, 96(a1)
+<         ld s11, 104(a1)
+---
+>         lw ra, 0(a1)
+>         lw sp, 4(a1)
+>         lw s0, 8(a1)
+>         lw s1, 12(a1)
+>         lw s2, 16(a1)
+>         lw s3, 20(a1)
+>         lw s4, 24(a1)
+>         lw s5, 28(a1)
+>         lw s6, 32(a1)
+>         lw s7, 36(a1)
+>         lw s8, 40(a1)
+>         lw s9, 44(a1)
+>         lw s10, 48(a1)
+>         lw s11, 52(a1)
+
+###############################################
+../trampoline.S
+###############################################
+39,68c39,68
+<         sd ra, 40(a0)
+<         sd sp, 48(a0)
+<         sd gp, 56(a0)
+<         sd tp, 64(a0)
+<         sd t0, 72(a0)
+<         sd t1, 80(a0)
+<         sd t2, 88(a0)
+<         sd s0, 96(a0)
+<         sd s1, 104(a0)
+<         sd a1, 120(a0)
+<         sd a2, 128(a0)
+<         sd a3, 136(a0)
+<         sd a4, 144(a0)
+<         sd a5, 152(a0)
+<         sd a6, 160(a0)
+<         sd a7, 168(a0)
+<         sd s2, 176(a0)
+<         sd s3, 184(a0)
+<         sd s4, 192(a0)
+<         sd s5, 200(a0)
+<         sd s6, 208(a0)
+<         sd s7, 216(a0)
+<         sd s8, 224(a0)
+<         sd s9, 232(a0)
+<         sd s10, 240(a0)
+<         sd s11, 248(a0)
+<         sd t3, 256(a0)
+<         sd t4, 264(a0)
+<         sd t5, 272(a0)
+<         sd t6, 280(a0)
+---
+>         sw ra, 20(a0)
+>         sw sp, 24(a0)
+>         sw gp, 28(a0)
+>         sw tp, 32(a0)
+>         sw t0, 36(a0)
+>         sw t1, 40(a0)
+>         sw t2, 44(a0)
+>         sw s0, 48(a0)
+>         sw s1, 52(a0)
+>         sw a1, 60(a0)
+>         sw a2, 64(a0)
+>         sw a3, 68(a0)
+>         sw a4, 72(a0)
+>         sw a5, 76(a0)
+>         sw a6, 80(a0)
+>         sw a7, 84(a0)
+>         sw s2, 88(a0)
+>         sw s3, 92(a0)
+>         sw s4, 96(a0)
+>         sw s5, 100(a0)
+>         sw s6, 104(a0)
+>         sw s7, 108(a0)
+>         sw s8, 112(a0)
+>         sw s9, 116(a0)
+>         sw s10, 120(a0)
+>         sw s11, 124(a0)
+>         sw t3, 128(a0)
+>         sw t4, 132(a0)
+>         sw t5, 136(a0)
+>         sw t6, 140(a0)
+72c72
+<         sd t0, 112(a0)
+---
+>         sw t0, 56(a0)
+75c75
+<         ld sp, 8(a0)
+---
+>         lw sp, 4(a0)
+78c78
+<         ld tp, 32(a0)
+---
+>         lw tp, 16(a0)
+81c81
+<         ld t0, 16(a0)
+---
+>         lw t0, 8(a0)
+85c85
+<         ld t1, 0(a0)
+---
+>         lw t1, 0(a0)
+115,144c115,144
+<         ld ra, 40(a0)
+<         ld sp, 48(a0)
+<         ld gp, 56(a0)
+<         ld tp, 64(a0)
+<         ld t0, 72(a0)
+<         ld t1, 80(a0)
+<         ld t2, 88(a0)
+<         ld s0, 96(a0)
+<         ld s1, 104(a0)
+<         ld a1, 120(a0)
+<         ld a2, 128(a0)
+<         ld a3, 136(a0)
+<         ld a4, 144(a0)
+<         ld a5, 152(a0)
+<         ld a6, 160(a0)
+<         ld a7, 168(a0)
+<         ld s2, 176(a0)
+<         ld s3, 184(a0)
+<         ld s4, 192(a0)
+<         ld s5, 200(a0)
+<         ld s6, 208(a0)
+<         ld s7, 216(a0)
+<         ld s8, 224(a0)
+<         ld s9, 232(a0)
+<         ld s10, 240(a0)
+<         ld s11, 248(a0)
+<         ld t3, 256(a0)
+<         ld t4, 264(a0)
+<         ld t5, 272(a0)
+<         ld t6, 280(a0)
+---
+>         lw ra, 20(a0)
+>         lw sp, 24(a0)
+>         lw gp, 28(a0)
+>         lw tp, 32(a0)
+>         lw t0, 36(a0)
+>         lw t1, 40(a0)
+>         lw t2, 44(a0)
+>         lw s0, 48(a0)
+>         lw s1, 52(a0)
+>         lw a1, 60(a0)
+>         lw a2, 64(a0)
+>         lw a3, 68(a0)
+>         lw a4, 72(a0)
+>         lw a5, 76(a0)
+>         lw a6, 80(a0)
+>         lw a7, 84(a0)
+>         lw s2, 88(a0)
+>         lw s3, 92(a0)
+>         lw s4, 96(a0)
+>         lw s5, 100(a0)
+>         lw s6, 104(a0)
+>         lw s7, 108(a0)
+>         lw s8, 112(a0)
+>         lw s9, 116(a0)
+>         lw s10, 120(a0)
+>         lw s11, 124(a0)
+>         lw t3, 128(a0)
+>         lw t4, 132(a0)
+>         lw t5, 136(a0)
+>         lw t6, 140(a0)
+147c147
+<         ld a0, 112(a0)
+---
+>         lw a0, 56(a0)
+
+###############################################
+../trap.c
+###############################################
+182c182
+<   if((scause & 0x8000000000000000L) &&
+---
+>   if((scause & 0x80000000L) &&
+191,192c191,192
+<     } else if(irq == VIRTIO0_IRQ){
+<       virtio_disk_intr();
+---
+> //    } else if(irq == VIRTIO0_IRQ){
+> //      virtio_disk_intr();
+204c204
+<   } else if(scause == 0x8000000000000001L){
+---
+>   } else if(scause == 0x80000001L){
+
+###############################################
+../types.h
+###############################################
+8c8
+< typedef unsigned long uint32;
+---
+> typedef unsigned long long uint64;
+
+###############################################
+../uart.c
+###############################################
+57c57
+< 
+---
+>   
+62c62
+<   WriteReg(0, 0x03);
+---
+>   WriteReg(0, 32000000/115200 & 0xff);
+65c65
+<   WriteReg(1, 0x00);
+---
+>   WriteReg(1, 32000000/115200 >> 8);
+69c69
+<   WriteReg(LCR, LCR_EIGHT_BITS);
+---
+>   WriteReg(LCR, 0x00);
+72c72
+<   WriteReg(FCR, FCR_FIFO_ENABLE | FCR_FIFO_CLEAR);
+---
+>   WriteReg(FCR, 0x07);
+138a139
+>       ReadReg(ISR);
+190a192
+> 
+
+###############################################
+../vm.c
+###############################################
+31c31
+<   kvmmap(kpgtbl, VIRTIO0, VIRTIO0, PGSIZE, PTE_R | PTE_W);
+---
+>   kvmmap(kpgtbl, 0x10001000, 0x10001000, PGSIZE, PTE_R | PTE_W);
+88c88
+<   if(va >= MAXVA)
+---
+>   if(va > MAXVA)
+91c91
+<   for(int level = 2; level > 0; level--) {
+---
+>   for(int level = 1; level > 0; level--) {
+114c114
+<   if(va >= MAXVA)
+---
+>   if(va > MAXVA)
+175d174
+< 
+179,180c178,179
+<   for(a = va; a < va + npages*PGSIZE; a += PGSIZE){
+<     if((pte = walk(pagetable, a, 0)) == 0)
+---
+>   for(a = va>>12; a < (va>>12) + (npages*(PGSIZE>>12)); a += PGSIZE>>12){
+>     if((pte = walk(pagetable, a<<12, 0)) == 0)
+275c274
+<   for(int i = 0; i < 512; i++){
+---
+>   for(int i = 0; i < 1024; i++){
+283c282
+<       panic("freewalk: leaf");
+---
+>     	panic("freewalk: leaf");
+

@@ -1,0 +1,29 @@
+cube - 3D Printable model of a case for the xv6-riscv-fpga computer
+
+Copyright 2023 Michael Schröder
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+files in xv6-riscv-fpga/cube:
+front.blend			- front part of case (black)
+LICENSE				- this license text
+logo1.blend			- RISC-V logo part 1 (blue)
+logo2.blend			- RISC-V logo part 2 (yellow)
+logo3.blend			- RISC-V logo part 3 (white)
+nothing.blend		- nothing
+README.md			- readme file
+rear.blend			- back part of case (black)
+rip.blend			- rip of case, 6 pieces needed (black)
+rip_center.blend	- center rip (black)
+tray_32u4.blend		- tray for Olimexino 32u4 (black)
+tray_ice40.blend	- tray for iCE40HX8K-EVB from Olimex (black)
+tray_SD.blend		- tray for SD-Card UEXT-SDCARD Olimex (black)
+tray_Thinker.blend	- tray with "Lowest poly Thinker" (black)
+
+Lowest poly The Thinker by LxO is licensed under theCreative Commons - Attribution - Non-Commercial - Share Alike license.
+see. https://www.thingiverse.com/thing:2164071
+

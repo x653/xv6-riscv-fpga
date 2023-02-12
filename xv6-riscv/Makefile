@@ -75,14 +75,14 @@ $U/initcode: $U/initcode.S
 tags: $(OBJS) _init
 	etags *.S *.c
 
-$K/entry.o:	$K/entry.S
-	$(CC) $(CFLAGS) -c -o $K/entry.o $K/entry.S
-$K/swtch.o:	$K/swtch.S
-	$(CC) $(CFLAGS) -c -o $K/swtch.o $K/swtch.S
-$K/trampoline.o:	$K/trampoline.S
-	$(CC) $(CFLAGS) -c -o $K/trampoline.o $K/trampoline.S
-$K/kernelvec.o:	$K/kernelvec.S
-	$(CC) $(CFLAGS) -c -o $K/kernelvec.o $K/kernelvec.S
+$K/entry.o:	$K/entry32.S
+	$(CC) $(CFLAGS) -c -o $K/entry.o $K/entry32.S
+$K/swtch.o:	$K/swtch32.S
+	$(CC) $(CFLAGS) -c -o $K/swtch.o $K/swtch32.S
+$K/trampoline.o:	$K/trampoline32.S
+	$(CC) $(CFLAGS) -c -o $K/trampoline.o $K/trampoline32.S
+$K/kernelvec.o:	$K/kernelvec32.S
+	$(CC) $(CFLAGS) -c -o $K/kernelvec.o $K/kernelvec32.S
 	
 ULIB = $U/ulib.o $U/usys.o $U/printf.o $U/umalloc.o
 
@@ -132,6 +132,7 @@ UPROGS=\
 	$U/_hello\
 	$U/_lisp\
 	$U/_mem\
+	$U/_ping\
 
 FILES=\
 	$U/_let\
@@ -152,79 +153,6 @@ clean:
         $U/usys.S \
 	$(UPROGS)
 
-# try to generate a unique GDB port
-GDBPORT = $(shell expr `id -u` % 5000 + 25000)
-# QEMU's gdb stub command line changed in 0.11
-QEMUGDB = $(shell if $(QEMU) -help | grep -q '^-gdb'; \
-	then echo "-gdb tcp::$(GDBPORT)"; \
-	else echo "-s -p $(GDBPORT)"; fi)
 ifndef CPUS
 CPUS := 1
 endif
-
-QEMUEXTRA = -drive file=fs1.img,if=none,format=raw,id=x1 -device virtio-blk-device,drive=x1,bus=virtio-mmio-bus.1
-QEMUOPTS = -machine virt -bios none -kernel $K/kernel -m 1024M -smp $(CPUS) -nographic
-QEMUOPTS += -drive file=fs.img,if=none,format=raw,id=x0 -device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0
-
-qemu: $K/kernel fs.img
-	$(QEMU) $(QEMUOPTS)
-
-.gdbinit: .gdbinit.tmpl-riscv
-	sed "s/:1234/:$(GDBPORT)/" < $^ > $@
-
-qemu-gdb: $K/kernel .gdbinit fs.img
-	@echo "*** Now run 'gdb' in another window." 1>&2
-	$(QEMU) $(QEMUOPTS) -S $(QEMUGDB)
-
-# CUT HERE
-# prepare dist for students
-# after running make dist, probably want to
-# rename it to rev0 or rev1 or so on and then
-# check in that version.
-
-EXTRA=\
-	mkfs.c ulib.c user.h cat.c echo.c forktest.c grep.c kill.c\
-	ln.c ls.c mkdir.c rm.c stressfs.c usertests.c wc.c zombie.c\
-	printf.c umalloc.c\
-	README dot-bochsrc *.pl \
-	.gdbinit.tmpl gdbutil\
-
-dist:
-	rm -rf dist
-	mkdir dist
-	for i in $(FILES); \
-	do \
-		grep -v PAGEBREAK $$i >dist/$$i; \
-	done
-	sed '/CUT HERE/,$$d' Makefile >dist/Makefile
-	echo >dist/runoff.spec
-	cp $(EXTRA) dist
-
-dist-test:
-	rm -rf dist
-	make dist
-	rm -rf dist-test
-	mkdir dist-test
-	cp dist/* dist-test
-	cd dist-test; $(MAKE) print
-	cd dist-test; $(MAKE) bochs || true
-	cd dist-test; $(MAKE) qemu
-
-# update this rule (change rev#) when it is time to
-# make a new revision.
-tar:
-	rm -rf /tmp/xv6
-	mkdir -p /tmp/xv6
-	cp dist/* dist/.gdbinit.tmpl /tmp/xv6
-	(cd /tmp; tar cf - xv6) | gzip >xv6-rev10.tar.gz  # the next one will be 10 (9/17)
-
-hex:	fs.img	
-	readelf -x 1 xv6.elf > xv6.hex
-	readelf -x 2 xv6.elf >> xv6.hex
-	readelf -x 3 xv6.elf >> xv6.hex
-	readelf -x 4 xv6.elf >> xv6.hex
-	readelf -x 5 xv6.elf >> xv6.hex
-	echo G 0x80000000 >> xv6.hex
-	echo >> xv6.hex
-
-.PHONY: dist-test dist

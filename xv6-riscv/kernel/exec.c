@@ -5,7 +5,7 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
-#include "elf.h"
+#include "elf32.h"
 
 static int loadseg(pde_t *, uint32, struct inode *, uint, uint);
 
