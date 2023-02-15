@@ -137,6 +137,7 @@ UPROGS=\
 FILES=\
 	$U/_let\
 	$U/_sqrt\
+	$U/_sqrt2\
 	$U/_fib\
 
 fs.img: mkfs/mkfs README $(UPROGS)

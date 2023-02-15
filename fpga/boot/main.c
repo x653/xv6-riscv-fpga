@@ -89,7 +89,7 @@ void main(void)
 	}
 	printf("OK\ne_magic  0x464c457f");
 	int inode=0;
-	while(elf.magic!=0x464c457f){
+	while((elf.magic!=0x464c457f) || (elf.entry!=0x80000000)){
 		getInode(++inode);
 		getELFHeader();
 		printf(".");
