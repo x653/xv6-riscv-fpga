@@ -2,6 +2,8 @@
 
 Build a RISC-V computer system on fpga iCE40HX8K-EVB and run UNIX xv6 using only FOSS (free and open source hard- and software).
 
+![](/home/micha/gitlab/xv6-fpga/cube/cube.jpg)
+
 xv6-riscv is a simple educational UNIX operating system written in ANSI-C developed and used at MIT in courses to teach operating systems. The original code is implemented for RISC-V 64 bit CPU.
 
 In this project we will build a minimal computer system based on an fpga board capable of running UNIX xv6. We will implement only the smaller 32 bit version of RISC-V CPU and we will drop all features not explicit needed to run xv6, like floating point operation and even multiplication in hardware. The remaining core is called rv32ia_zicsr and implements only a minimal command set:
@@ -50,13 +52,12 @@ The fpga iCE40HX8K has the nice property, that it can be programmed with FOSS fr
 
 ```
 $ pip install -U apio
+$ apio install oss-cad-suite
 ```
-
-
 
 ## 03_firmware
 
-Build the firmware, which implements a bootloader, that reads the SD-CARD. The bootloader than seaches for an ELF file containing the kernel xv6. Loads the kernel into memory and starts the kernel. 
+* Build the firmware, which implements a bootloader, that reads the SD-CARD. The bootloader than seaches for an ELF file containing the kernel xv6. Loads the kernel into memory and starts the kernel. 
 
 ```
 $ cd fpga/boot
@@ -86,13 +87,15 @@ $ apio upload
 
 ## 05_software
 
-Build the software, composed of kernel and user programms and write everything on the file system. 
+* Build the software, composed of kernel and user programms and write everything on the file system. 
 
 ```
 $ cd xv6-riscv
 $ make
 $ make fs.img
 ```
+
+* Write the image `fs.img` on a SD-Card.
 
 ## 06_Run UNIX xv6 on RISC-V
 
@@ -212,7 +215,7 @@ search path, you can run "make qemu".
 $ 
 ```
 
-## 09_Run LISP on xv6 on RISC-V
+## 09_run LISP on xv6 on RISC-V
 
 and even run LISP on a computer system that runs UNIX on a home made CPU! 
 
@@ -227,3 +230,32 @@ lisp> (+ 2 4)
 6
 lisp> 
 ```
+
+
+
+## 10_3d printable cube
+
+Finally we print case with a 3d-Printer. The case is a miniatur replica of the classic computer NeXTcube (https://en.wikipedia.org/wiki/NeXTcube). All components are mounted on trays, which can be pushed in the cube (10cm x 10cm x 10cm).
+
+All the parts are modelled with free software tools.
+
+- [blender](https://blender.org) is a very powerfull 3D modelling software. All parts of the cube are modelled with blender. You can edit the blender files and change details on the design. The blender-design files can than be exported to STL-format, a common 3D-file format used for 3D-printing.
+- [prusa-slic3r](https://www.prusa3d.com). This is the slicer software for 3D-Printers from the manufacturer Prusa. This programm is used to convert the STL-files to printerspecific gcode-files.
+
+The subfolder `files/` containes the blender files and the corresponging STL-files.
+
+The modules are mounted on trays with little screws (M3x5/M2.4x5 selfcutting). From left to right:
+
+1. Olimexino 32u4: Programmer/UART bridge
+2. iCE40HX8K-EVB: fpga development board
+3. SD-Card reader
+4. Thinker
+
+![](/home/micha/gitlab/xv6-fpga/cube/inside.jpg)
+
+On the rear cover you see connectors for power supply (5V), 34 pin GPIO and the USB connector which has dual usage:
+
+1. upload bitstream files to iCE40 fpga
+2. communicate to Hack-Computer over UART
+
+![](/home/micha/gitlab/xv6-fpga/cube/rear.jpg)
