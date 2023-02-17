@@ -36,7 +36,15 @@ The hardware consists of three little boards available at Olimex Ltd.
 
 Connect the three boards according to the following schematic:
 
-## 02_gcc-toolchain
+## 02_software
+
+### 02.1_oss-cad-suite
+
+The fpga iCE40HX8K has the nice property, that it can be programmed with FOSS free and open source software. This can be done with the toolchain project icestorm provided by Clifford Wold. The complete toolchain (yosys, icestorm, place and route, programmer) is available as bundle at [GitHub - YosysHQ/oss-cad-suite-build: Multi-platform nightly builds of open source digital design and verification tools](https://github.com/YosysHQ/oss-cad-suite-build/).
+
+- Install oss-cad-suite 02_gcc-toolchain
+
+### 02.1_gcc-toolchain for RISC-V
 
 The toolchain with c-compiler can be downloaded from the following site. In order to be able to build code for the rv32ia_zicsr version we need a toolchain with multilib and gcc-libary implementation for rv32i.
 
@@ -44,18 +52,9 @@ Attention: Download rv64imc with multilib rv32i !
 
 [GitHub - stnolting/riscv-gcc-prebuilt: 📦 Prebuilt RISC-V GCC toolchains for x64 Linux.](https://github.com/stnolting/riscv-gcc-prebuilt)
 
-## 04_apio
+## 03_build
 
-The fpga iCE40HX8K has the nice property, that it can be programmed with FOSS free and open source software. This can be done with the toolchain project icestorm provided by Clifford Wold. Apio is a python package based on project icestorm, which provides a easy to use command line utility to facilitate fpga developement.
-
-* Install apio
-
-```
-$ pip install -U apio
-$ apio install oss-cad-suite
-```
-
-## 03_firmware
+### 03.1_compile bootloader
 
 * Build the firmware, which implements a bootloader, that reads the SD-CARD. The bootloader than seaches for an ELF file containing the kernel xv6. Loads the kernel into memory and starts the kernel. 
 
@@ -64,7 +63,7 @@ $ cd fpga/boot
 $ make
 ```
 
-## 04_fpga
+### 03.2_synthesize and upload to fpga iCE40HX8K-EVB
 
 The fpga iCE40HX8K contains the whole hardware of our computer system:
 
@@ -80,24 +79,24 @@ To build the fpga hardware connect your computer with the programmer Olimexino 3
 
 ```
 $ cd fpga
-$ apio clean
-$ apio build
-$ apio upload
+ make
 ```
 
-## 05_software
+### 03.3_compile xv6-riscv
 
 * Build the software, composed of kernel and user programms and write everything on the file system. 
 
 ```
 $ cd xv6-riscv
-$ make
+ make
 $ make fs.img
 ```
 
 * Write the image `fs.img` on a SD-Card.
 
-## 06_Run UNIX xv6 on RISC-V
+## 04_Run
+
+### 04_1_run xv6
 
 Now connect to RV32ia_zicsr with USB and start a terminal session (i.e. tio). Start RV32ia_zicsr and see the welcome message. Insert the SD-Card into the reader and see if RV32 can boot UNIX xv6 from the file system.
 
@@ -109,7 +108,7 @@ $ tio -m INLCRNL /dev/ttyACM0
 |   /| |\__ \ (_|___\ V / 
 |_|_\___|___/\___|   \_/  
 
-Processor: rv32ia @32MHz V1.0
+Processor: rv32ia @32MHz V1.2
 
 0x00000000 BOOT (12 KB)
 0x02000000 CLINT
@@ -133,7 +132,7 @@ init: starting sh
 $ 
 ```
 
-## 07_user programs
+### 04.2_unix commands
 
 Now that you have access to the shell you can launch UNIX commands.
 
@@ -215,7 +214,7 @@ search path, you can run "make qemu".
 $ 
 ```
 
-## 09_run LISP on xv6 on RISC-V
+### 04.3_run LISP
 
 and even run LISP on a computer system that runs UNIX on a home made CPU! 
 
@@ -231,7 +230,7 @@ lisp> (+ 2 4)
 lisp> 
 ```
 
-## 10_3d printable cube
+## 05_cube
 
 Finally we print case with a 3d-Printer. The case is a miniatur replica of the classic computer NeXTcube (https://en.wikipedia.org/wiki/NeXTcube). All components are mounted on trays, which can be pushed in the cube (10cm x 10cm x 10cm).
 
@@ -242,6 +241,8 @@ All the parts are modelled with free software tools.
 
 The subfolder `files/` containes the blender files and the corresponging STL-files.
 
+### 05.1_inside
+
 The modules are mounted on trays with little screws (M3x5/M2.4x5 selfcutting). From left to right:
 
 1. Olimexino 32u4: Programmer/UART bridge
@@ -249,7 +250,11 @@ The modules are mounted on trays with little screws (M3x5/M2.4x5 selfcutting). F
 3. SD-Card reader
 4. Thinker
 
+# 
+
 ![](cube/inside.jpg)
+
+### 05.2_rear
 
 On the rear cover you see connectors for power supply (5V), 34 pin GPIO and the USB connector which has dual usage:
 
@@ -257,5 +262,7 @@ On the rear cover you see connectors for power supply (5V), 34 pin GPIO and the 
 2. communicate to Hack-Computer over UART
 
 ![](cube/rear.jpg)
+
+## 06_License
 
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons Lizenzvertrag" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />Dieses Werk ist lizenziert unter einer <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Namensnennung 4.0 International Lizenz</a>.

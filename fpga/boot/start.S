@@ -33,7 +33,7 @@ _entry:	addi x1, zero, 0
 		addi x29, zero, 0
 		addi x30, zero, 0
 		addi x31, zero, 0
-		li sp, 0x4000   //stackpointer in ram
+		li sp, 0x00004000   //stackpointer in ram
 		call main
 halt:	wfi
 		j halt

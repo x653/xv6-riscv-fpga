@@ -7,12 +7,16 @@ MEMORY {
 }
 
 SECTIONS {
-	.text : {
+	.memory : {
 		_entry = .;
 		*(.text);
+		. = ALIGN(4);
 		*(.rodata);
+		. = ALIGN(4);
 		*(.data);
+		. = ALIGN(4);
 		*(.bss);
+		. = ALIGN(4);
 		*(.sbss);
 		. = ALIGN(4);
 	} > mem

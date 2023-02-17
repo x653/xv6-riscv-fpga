@@ -1,16 +1,36 @@
-TOOLPREFIX = ~/.apio/packages/tools-oss-cad-suite/bin/
+OBJS =  clint.v plic.v pll.v rv32.v soc.v spi.v sram.v top.v uart.v vma.v
 
-hardware.json:	clint.v plic.v pll.v rv32.v soc.v spi.v sram.v top.v uart.v vma.v
-	$(TOOLPREFIX)yosys -p "synth_ice40 -json hardware.json" -q clint.v plic.v pll.v rv32.v soc.v spi.v sram.v top.v uart.v vma.v
+TOOLPREFIX = /opt/oss-cad-suite/bin/
+
+YOSYS   = $(TOOLPREFIX)yosys
+NEXTPNR = $(TOOLPREFIX)nextpnr-ice40
+ICEPACK = $(TOOLPREFIX)icepack
+ICEPROG = $(TOOLPREFIX)iceprogduino
+
+PNRFLAGS = --hx8k --package ct256 --pcf ice40hx8k_evb.pcf -q
+
+
+all:	upload
+
+hardware.json:	$(OBJS)
+	$(YOSYS) -p "synth_ice40 -top top -json hardware.json" -q $(OBJS)
 
 hardware.asc:	hardware.json
-	$(TOOLPREFIX)nextpnr-ice40 --hx8k --package ct256 --json hardware.json --asc hardware.asc --pcf ice40hx8k_evb.pcf -q
+	$(NEXTPNR) $(PNRFLAGS) --json hardware.json --asc hardware.asc
+
 hardware.bin:	hardware.asc
-	$(TOOLPREFIX)icepack hardware.asc hardware.bin
+	$(ICEPACK) hardware.asc hardware.bin
+
 upload:			hardware.bin
-	$(TOOLPREFIX)iceprogduino hardware.bin
+	$(ICEPROG) hardware.bin
+
 run:	
 	tio -m INLCRNL /dev/ttyACM0
+
 clean:
-	rm hardware.*
+	rm -f hardware.*
+
+.PHONY: all clean
+
+
 
