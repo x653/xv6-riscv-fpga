@@ -2,7 +2,7 @@
 
 Build a RISC-V computer system on fpga iCE40HX8K-EVB and run UNIX xv6 using only FOSS (free and open source hard- and software).
 
-![](/home/micha/gitlab/xv6-fpga/cube/cube.jpg)
+![](cube/cube.jpg)
 
 xv6-riscv is a simple educational UNIX operating system written in ANSI-C developed and used at MIT in courses to teach operating systems. The original code is implemented for RISC-V 64 bit CPU.
 
@@ -231,8 +231,6 @@ lisp> (+ 2 4)
 lisp> 
 ```
 
-
-
 ## 10_3d printable cube
 
 Finally we print case with a 3d-Printer. The case is a miniatur replica of the classic computer NeXTcube (https://en.wikipedia.org/wiki/NeXTcube). All components are mounted on trays, which can be pushed in the cube (10cm x 10cm x 10cm).
@@ -251,11 +249,11 @@ The modules are mounted on trays with little screws (M3x5/M2.4x5 selfcutting). F
 3. SD-Card reader
 4. Thinker
 
-![](/home/micha/gitlab/xv6-fpga/cube/inside.jpg)
+![](cube/inside.jpg)
 
 On the rear cover you see connectors for power supply (5V), 34 pin GPIO and the USB connector which has dual usage:
 
 1. upload bitstream files to iCE40 fpga
 2. communicate to Hack-Computer over UART
 
-![](/home/micha/gitlab/xv6-fpga/cube/rear.jpg)
+![](cube/rear.jpg)
