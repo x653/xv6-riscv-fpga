@@ -102,7 +102,6 @@ Now connect to RV32ia_zicsr with USB and start a terminal session (i.e. tio). St
 
 ```
 $ tio -m INLCRNL /dev/ttyACM0
-
  ___ ___ ___  ___  __   __
 | _ \_ _/ __|/ __|_\ \ / /
 |   /| |\__ \ (_|___\ V / 
@@ -110,19 +109,20 @@ $ tio -m INLCRNL /dev/ttyACM0
 
 Processor: rv32ia @32MHz V1.2
 
-0x00000000 BOOT (12 KB)
+0x00001000 BOOT (12 KB)
 0x02000000 CLINT
 0x0C000000 PLIC
 0x10000000 UART
-0x20000000 SD-CARD
+0x10001000 SD-CARD
 0x80000000 RAM (512 KB)
 
-reading superblock
-sb.magic: 0x10203040
-reading inode 2
-reading ELF header
-elf.magic: 0x464c457f
-jump to entry point 0x80000000
+sb_magic 0x10203040.OK
+e_magic  0x464c457f..OK
+   p_type     p_addr     p_filesz   load
+0  0x70000003 0x00000000 0x00000025 
+1  0x00000001 0x80000000 0x00009138 OK
+2  0x00000001 0x8000a000 0x0000003c OK
+e_entry  0x80000000
 
 Welcome to rv32ia 6th Edition UNIX
 

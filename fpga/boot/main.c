@@ -51,7 +51,7 @@ void getELFHeader(){
 void getInode(int n){
 	if (spi_rb(sb.inodestart,buf)) panic("read block\n");
 	memmove(&file,buf+sizeof(file)*n,sizeof(file));
-	if (spi_rb(file.addrs[12],(char*)indirect)) panic("getInode()\n");
+	if (spi_rb(file.addrs[12],(unsigned char*)indirect)) panic("getInode()\n");
 }
 
 void load(int off,int pa, int n){
@@ -59,7 +59,7 @@ void load(int off,int pa, int n){
 	while (n>0){
 		if ((off>>9)<12) block = file.addrs[off>>9];
 		else block = indirect[((off>>9)-12)]; 
-		if (spi_rb(block,(char*)pa)) panic("load()\n");
+		if (spi_rb(block,(unsigned char*)pa)) panic("load()\n");
 		off+=BSIZE;
 		pa+=BSIZE;
 		n-=BSIZE;

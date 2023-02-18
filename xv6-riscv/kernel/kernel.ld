@@ -9,8 +9,10 @@ SECTIONS
    */
   . = 0x80000000;
   .text :
-  {
-    *(.text)
+  { 
+	_entry = . ;
+    *(.text*)
+	*(.rodata*)
     . = ALIGN(0x1000);
     *(trampsec)
   }

@@ -1,16 +1,16 @@
 #include "stdio.h"
 #include <stdarg.h>
 
-static char digits[] = "0123456789abcdef";
+char digits[] = "0123456789abcdef";
 
-static void
+void
 printint(int xx, int base)
 {
   char buf[16];
   int i;
   unsigned int x;
   int sign;
-  if(sign = xx < 0)
+  if((sign = (xx < 0)))
     x = -xx;
   else
     x = xx;
@@ -27,7 +27,7 @@ printint(int xx, int base)
     putchar(buf[i]);
 }
 
-static void
+void
 printptr(unsigned int x)
 {
   int i;
@@ -37,7 +37,7 @@ printptr(unsigned int x)
     putchar(digits[x >> (sizeof(int) * 8 - 4)]);
 }
 
-static void
+void
 printbyte(unsigned char x)
 {
   putchar(digits[x >> 4 & 0x0f]);

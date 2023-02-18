@@ -35,31 +35,20 @@ OBJS = \
 TOOLPREFIX = /opt/riscv/bin/riscv64-unknown-elf-
 LIBGCC = /opt/riscv/lib/gcc/riscv64-unknown-elf/12.1.0/rv32i/ilp32
 
-QEMU = qemu-system-riscv32 -monitor telnet:127.0.0.1:55555,server,nowait 
-
 CC = $(TOOLPREFIX)gcc
 AS = $(TOOLPREFIX)gas
 LD = $(TOOLPREFIX)ld
 OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
 
-CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer -ggdb -gdwarf-2
+CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer #-ggdb -gdwarf-2
 CFLAGS += -march=rv32ia_zicsr
 CFLAGS += -mabi=ilp32
 CFLAGS += -mcmodel=medany
-CFLAGS += -ffreestanding -fno-common -nostdlib -mno-relax #-s
+CFLAGS += -ffreestanding -nostdlib -mno-relax #-fno-common #-s
 CFLAGS += -I.
-CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
 
-# Disable PIE when possible (for Ubuntu 16.10 toolchain)
-ifneq ($(shell $(CC) -dumpspecs 2>/dev/null | grep -e '[^f]no-pie'),)
-CFLAGS += -fno-pie -no-pie
-endif
-ifneq ($(shell $(CC) -dumpspecs 2>/dev/null | grep -e '[^f]nopie'),)
-CFLAGS += -fno-pie -nopie
-endif
-
-LDFLAGS = -z max-page-size=4096 -melf32lriscv -s
+LDFLAGS = -z max-page-size=4096 -melf32lriscv #-s
 
 $K/kernel: $(OBJS) $K/kernel.ld $U/initcode
 	$(LD) $(LDFLAGS) -T $K/kernel.ld -o $K/kernel $(OBJS) -L$(LIBGCC) -lgcc
@@ -68,7 +57,7 @@ $K/kernel: $(OBJS) $K/kernel.ld $U/initcode
 
 $U/initcode: $U/initcode.S
 	$(CC) $(CFLAGS) -nostdinc -I. -Ikernel -c $U/initcode.S -o $U/initcode.o
-	$(LD) $(LDFLAGS) -N -e start -Ttext 0 -o $U/initcode.out $U/initcode.o -L$(LIBGCC) -lgcc
+	$(LD) $(LDFLAGS) -N -e start -Ttext 0 -o $U/initcode.out $U/initcode.o -L$(LIBGCC) #-lgcc
 	$(OBJCOPY) -S -O binary $U/initcode.out $U/initcode
 	$(OBJDUMP) -S $U/initcode.o > $U/initcode.asm
 
@@ -100,7 +89,7 @@ $U/usys.o : $U/usys.S
 $U/_forktest: $U/forktest.o $(ULIB)
 	# forktest has less library code linked in - needs to be small
 	# in order to be able to max out the proc table.
-	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $U/_forktest $U/forktest.o $U/ulib.o $U/usys.o  -L$(LIBGCC) -lgcc
+	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $U/_forktest $U/forktest.o $U/ulib.o $U/usys.o  -L$(LIBGCC) #-lgcc
 	$(OBJDUMP) -S $U/_forktest > $U/forktest.asm
 
 mkfs/mkfs: mkfs/mkfs.c $K/fs.h
@@ -137,7 +126,6 @@ UPROGS=\
 FILES=\
 	$U/_let\
 	$U/_sqrt\
-	$U/_sqrt2\
 	$U/_fib\
 
 fs.img: mkfs/mkfs README $(UPROGS)
