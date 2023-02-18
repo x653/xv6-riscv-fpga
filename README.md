@@ -31,10 +31,29 @@ The hardware consists of three little boards available at Olimex Ltd.
   1. as programmer, to upload the fpga bitstream file to the iCE40HX8K-EVB board.
   
   2. as UART bridge, to connect a terminal to the RISCV-V CPU running UNIX xv6.
+  
+  3. to power everything over USB through the UEXT cable, connect the solder jumper `3.3V_E1` on iCE40HX8K-EVB. (compare schematic of [iCE40HX8K-EVB](doc/iCE40HX8K-EVB_Rev_B.pdf))
 
 * SD-CARD: This little board holds an SD-Card containing the complete file system of UNIX xv6.
 
-Connect the three boards according to the following schematic:
+Connect the three boards according to the following picture:
+
+![](/home/micha/gitlab/xv6-riscv-fpga/doc/connect.png)
+
+* USB mini cable from Computer to Olimexino 32u4
+
+* IDC10 cable from Olimexino 32u4 to iCE40HX8K-EVB
+
+* 6 jumper wires from iCE40HX8K-EVB to MOD-SDMMC
+
+| wire                  | iCE40HX8K-EVB<br/>JTAG1 connector | MOD-SDMMC<br/>UEXT connector |
+| --------------------- | --------------------------------- | ---------------------------- |
+| +3.3V                 | 6 - VCC                           | 1 - VCC                      |
+| GND                   | 5 - GND                           | 2 - GND                      |
+| SDI - serial data in  | 2 - TDI (PIO1_00)                 | 7 - MISO                     |
+| SDO - serial data out | 3 - TDO (PIO1_03)                 | 8 - MOSI                     |
+| SCK - serial clock    | 4 - TCK (PIO1_02)                 | 9 - SCK                      |
+| CSX- chip select not  | 1 - TMS (PIO1_01)                 | 10 - #SS                     |
 
 ## 02_software
 
@@ -42,13 +61,13 @@ Connect the three boards according to the following schematic:
 
 The fpga iCE40HX8K has the nice property, that it can be programmed with FOSS free and open source software. This can be done with the toolchain project icestorm provided by Clifford Wold. The complete toolchain (yosys, icestorm, place and route, programmer) is available as bundle at [GitHub - YosysHQ/oss-cad-suite-build: Multi-platform nightly builds of open source digital design and verification tools](https://github.com/YosysHQ/oss-cad-suite-build/).
 
-- Install oss-cad-suite 02_gcc-toolchain
+- Install oss-cad-suite and copy the folder to `/opt/oss-cad-suite`
 
 ### 02.1_gcc-toolchain for RISC-V
 
 The toolchain with c-compiler can be downloaded from the following site. In order to be able to build code for the rv32ia_zicsr version we need a toolchain with multilib and gcc-libary implementation for rv32i.
 
-Attention: Download rv64imc with multilib rv32i !
+Attention: Download rv64imc with multilib rv32i and copy folder to `/opt/riscv`
 
 [GitHub - stnolting/riscv-gcc-prebuilt: 📦 Prebuilt RISC-V GCC toolchains for x64 Linux.](https://github.com/stnolting/riscv-gcc-prebuilt)
 
@@ -79,7 +98,7 @@ To build the fpga hardware connect your computer with the programmer Olimexino 3
 
 ```
 $ cd fpga
- make
+$ make
 ```
 
 ### 03.3_compile xv6-riscv
@@ -88,7 +107,7 @@ $ cd fpga
 
 ```
 $ cd xv6-riscv
- make
+$ make
 $ make fs.img
 ```
 

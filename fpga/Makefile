@@ -9,7 +9,6 @@ ICEPROG = $(TOOLPREFIX)iceprogduino
 
 PNRFLAGS = --hx8k --package ct256 --pcf ice40hx8k_evb.pcf -q
 
-
 all:	upload
 
 hardware.json:	$(OBJS)
