@@ -134,7 +134,7 @@ module uart(
 	wire addr_is9 =  DLA & (i_addr == 3'd1); // divisor latch msb
 
 	assign o_dat_r = i_addr[2] ?
-				{16'd0,1'b0,THE,TSE,4'd0,DR,8'd0}: //reg 7 6 5 4
+				{16'd0,1'b0,TSE&THE,THE,4'd0,DR,8'd0}: //reg 7 6 5 4
 				(DLA? {16'd0,DL}:				   //reg x x 9 8
 					  {DLA,7'd0,5'd0,IID2,IID1,IIP,6'd0,TRE,EDA,RBR});    //reg 3 2 1 0
 

@@ -7,7 +7,7 @@
 // 02000000 -- CLINT
 // 0C000000 -- PLIC
 // 10000000 -- uart0 
-// 10001000 -- virtio disk 
+// 10001000 -- sdcard 
 // 80000000 -- boot ROM jumps here in machine mode
 //             -kernel loads the kernel here
 // unused RAM after 80000000.
@@ -22,8 +22,7 @@
 #define UART0_IRQ 10
 
 // virtio mmio interface
-#define VIRTIO0 0x10001000
-#define VIRTIO0_IRQ 1
+#define SDCARD 0x10001000
 
 // core local interruptor (CLINT), which contains the timer.
 #define CLINT 0x2000000L
