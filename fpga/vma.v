@@ -25,7 +25,7 @@ module vma(
 wire [21:0] 	satp_ppn  = i_satp[21:0];
 wire 		satp_mode = i_satp[31] & i_smode;
 wire rst = i_rst|i_sfence_vma|exception;
-wire o_exception=0;
+assign o_exception=0;
 //translation process
 assign o_p_addr[11:0]  = ~satp_mode? i_v_addr[11:0]: walk1? {i_v_addr[31:22],2'd0} : walk2? {i_v_addr[21:12],2'd0} : i_v_addr[11:0];
 assign o_p_addr[31:12] = ~satp_mode? i_v_addr[31:12] : walk1? satp_ppn[19:0] : pte[29:10];

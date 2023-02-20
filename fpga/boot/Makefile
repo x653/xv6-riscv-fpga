@@ -11,13 +11,15 @@ all:	firmware
 firmware.elf:	$(OBJECTS)
 	$(CC) $(CFLAG) $(OBJS) -o $@
 
-%.hex:	%.elf
-	readelf $< -x 1 | ./lsb2msb.py > $@
+firmware.hex:	firmware.elf
+	$(TOOLPREFIX)objcopy -j .mem firmware.elf -O binary firmware.bin
+	xxd -e firmware.bin | cut -c 11-46 > firmware.hex
 
 %.obj:  %.elf
 	$(TOOLPREFIX)objdump -d $?
 	
 firmware:	firmware.hex
+
 	cp firmware.hex ../
 
 clean:

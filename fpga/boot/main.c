@@ -49,8 +49,10 @@ void getELFHeader(){
 }
 
 void getInode(int n){
-	if (spi_rb(sb.inodestart,buf)) panic("read block\n");
-	memmove(&file,buf+sizeof(file)*n,sizeof(file));
+	unsigned int block = sb.inodestart + (n*sizeof(file))/512;
+	unsigned int offset = (n*sizeof(file))%512;
+	if (spi_rb(block,buf)) panic("read block\n");
+	memmove(&file,buf+offset,sizeof(file));
 	if (spi_rb(file.addrs[12],(unsigned char*)indirect)) panic("getInode()\n");
 }
 
@@ -70,7 +72,7 @@ void main(void)
 {
 	uart_init();
 	printf("\n ___ ___ ___  ___  __   __\n| _ \\_ _/ __|/ __|_\\ \\ / /\n|   /| |\\__ \\ (_|___\\ V / \n|_|_\\___|___/\\___|   \\_/  \n\n");
-	printf("Processor: rv32ia @32MHz V1.2\n\n");
+	printf("Processor: rv32ia @32MHz V1.3\n\n");
 	printf("0x00001000 BOOT (12 KB)\n");
 	printf("0x02000000 CLINT\n");
 	printf("0x0C000000 PLIC\n");
@@ -94,7 +96,8 @@ void main(void)
 		getELFHeader();
 		printf(".");
 	}
-	printf("OK\n   p_type     p_addr     p_filesz   load\n");
+	printf("OK\ne_entry  %p.",elf.entry);
+	printf("OK\n\n   p_type     p_addr     p_filesz   load\n");
 	for (int i=0;i<elf.phnum;i++){
 		memmove(&prog,buf+elf.phoff+i*sizeof(prog),sizeof(prog));
 		printf("%d  %p %p %p ",i,prog.type,prog.paddr,prog.filesz);
@@ -104,9 +107,8 @@ void main(void)
 		}
 		printf("\n");
 	}	
-	printf("e_entry  %p\n\n",elf.entry);
 
-	printf("Welcome to rv32ia 6th Edition UNIX\n");
+	printf("\nWelcome to rv32ia 6th Edition UNIX\n");
 	asm volatile("mv ra,%0" : : "r" (elf.entry));
 	asm volatile("ret");
 }

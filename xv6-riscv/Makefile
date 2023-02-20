@@ -51,7 +51,7 @@ CFLAGS += -I.
 LDFLAGS = -z max-page-size=4096 -melf32lriscv #-s
 
 $K/kernel: $(OBJS) $K/kernel.ld $U/initcode
-	$(LD) $(LDFLAGS) -T $K/kernel.ld -o $K/kernel $(OBJS) -L$(LIBGCC) -lgcc
+	$(LD) $(LDFLAGS) -T$K/kernel.ld -o $K/kernel $(OBJS) -L$(LIBGCC) -lgcc
 	$(OBJDUMP) -S $K/kernel > $K/kernel.asm
 	$(OBJDUMP) -t $K/kernel | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $K/kernel.sym
 
@@ -76,7 +76,7 @@ $K/kernelvec.o:	$K/kernelvec32.S
 ULIB = $U/ulib.o $U/usys.o $U/printf.o $U/umalloc.o
 
 _%: %.o $(ULIB)
-	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^  -L$(LIBGCC) -lgcc
+	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^ -L$(LIBGCC) -lgcc -s
 	$(OBJDUMP) -S $@ > $*.asm
 	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $*.sym
 

@@ -38,7 +38,7 @@ void putchar(unsigned char c)
 
 int getchar()
 {
-	while ((ReadReg(LSR) & LSR_RX_READY) ==0);//wait for DR (data ready) 
+	while ((ReadReg(LSR) & LSR_RX_READY) == 0);//wait for DR (data ready) 
 	return ReadReg(RHR);
 }
 
