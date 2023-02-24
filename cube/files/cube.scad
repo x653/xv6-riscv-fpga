@@ -1,58 +1,95 @@
 rip_i=94;
 rip_a=100;
-rip_h1=1.2;
-rip_h2=4;
-rip_d=2;
+rip_h=5;
+rip_l=2;
+rip_d=1;
+translate([0,0,-100])
 
 front();
-translate([0,0,34])
 cool();
+translate([0,0,50])
+rear();
+
+module rear(){
+    //Bodenplatte
+    translate([0,0,50-2])
+    cube([100,100,4],center=true);
+    //
+    translate([0,0,50-33.5/2])
+        rahmen(100,90,33.5);
+    translate([0,0,+32/2])
+        rahmen(96,90,1);
+
+    
+    
+}
+
 
 module front(){
-    translate([0,0,2])
+    //Bodenplatte
+    translate([0,0,-50+2])
     cube([100,100,4],center=true);
-    rahmen(100,90,33);
-    rahmen(96,90,34);
+    
+    //
+    translate([0,0,-50+33.5/2])
+        rahmen(100,90,33.5);
+    translate([0,0,-32/2])
+        rahmen(96,90,1);
     rahmen(94,90,96);
     
-    translate([45-1.25,45-1.25-2.5,48])
-    cube([2.5,2.5,96],center=true);
-    translate([45-1.25,-45+1.25+2.5,48])
-    cube([2.5,2.5,96],center=true);
-    translate([-45+1.25,45-1.25-2.5,48])
-    cube([2.5,2.5,96],center=true);
-    translate([-45+1.25,-45+1.25+2.5,48])
-    cube([2.5,2.5,96],center=true);
+    //rahmen halter
+    translate([45-1.25,45-1.25-2.5,0])
+        cube([2.5,2.5,96],center=true);
+    translate([45-1.25,-45+1.25+2.5,0])
+        cube([2.5,2.5,96],center=true);
+    translate([-45+1.25,45-1.25-2.5,0])
+        cube([2.5,2.5,96],center=true);
+    translate([-45+1.25,-45+1.25+2.5,0])
+        cube([2.5,2.5,96],center=true);
     
+    //STREBEN
+    translate([-45+2.5,-30+2.5,0])
+        cube([5,5,96],center=true);
+    translate([-45+3.75,-25+1.25,0])
+        cube([2.5,2.5,96],center=true);
+    translate([-45+2.5,+30-2.5,0])
+        cube([5,5,96],center=true);
+    translate([-45+3.75,+25-1.25,0])
+        cube([2.5,2.5,96],center=true);
+    translate([+45-2.5,-30+2.5,0])
+        cube([5,5,96],center=true);
+    translate([+45-3.75,-25+1.25,0])
+        cube([2.5,2.5,96],center=true);
+    translate([+45-2.5,+30-2.5,0])
+        cube([5,5,96],center=true);
+    translate([+45-3.75,+25-1.25,0])
+        cube([2.5,2.5,96],center=true);
 }
 
 module cool(){
-    rip();
-    translate([0,0,rip_h1+rip_h2])
-    rip();
-    translate([0,0,2*(rip_h1+rip_h2)])
-    rip();
-    translate([0,0,3*(rip_h1+rip_h2)])
-    rip();
-    translate([0,0,4*(rip_h1+rip_h2)])
-    rip();
-    translate([0,0,5*(rip_h1+rip_h2)])
-    rip();
-    translate([0,0,6*(rip_h1+rip_h2)])
-    rahmen(rip_a,rip_i,rip_h1);
+    delta=(rip_d+rip_h)/2;
+translate([0,0,delta+2*rip_h])mirror([0,0,1])rip();
+translate([0,0,delta+rip_h])mirror([0,0,1])rip();
+translate([0,0,delta])mirror([0,0,1])rip();
+rip_center();
+translate([0,0,-delta])rip();
+translate([0,0,-delta-rip_h])rip();
+translate([0,0,-delta-2*rip_h])rip();
 }
 
+module rip_center(){
+    rahmen(rip_a,rip_i,rip_d);
+}
 
 module rip(){
-    rahmen(rip_a,rip_i,rip_h1);
-    translate([0,0,rip_h1])
-    rahmen(rip_i+rip_d,rip_i,rip_h2);
+    rahmen(rip_a-2*rip_l,rip_i,rip_h);
+     translate([0,0,(-rip_h+rip_d)/2])
+        rahmen(rip_a,rip_i,rip_d);
+    
 }
 module rahmen(aussen,innen,hoehe){
     difference(){
-        translate([0,0,hoehe/2])
         cube([aussen,aussen,hoehe],center=true);
-    translate([0,0,hoehe/2])
-        cube([innen,innen,hoehe+0.1],center=true);
+    cube([innen,innen,hoehe],center=true);
     }
 }
