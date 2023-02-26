@@ -17,6 +17,13 @@ schienen_d = 2.4;
 schienen_a = 60;
 schienen_loch = 2;
 $fn=32;
+item=0;
+print(item);
+ 
+module print(item=0){
+   if (item==1) front();
+   if (item==2) rear();
+   if (item==0){
 translate([0,0,-100])    front();
 cool();
 translate([0,0,50])   rear();
@@ -26,7 +33,9 @@ translate([-150,0,0])    tray32u4();
 translate([0,-150,0])    tray_Thinker();
 
 translate([0,150,0])    tray_SDCard();
-    
+       
+   }
+} 
     
 module tray_SDCard(){
     cube([schienen_a-2*schienen_d,schienen_l,2],center=true);
