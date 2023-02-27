@@ -8,7 +8,7 @@ CC = $(TOOLPREFIX)gcc
 
 all:	firmware
 
-firmware.elf:	$(OBJECTS)
+firmware.elf:	$(OBJS)
 	$(CC) $(CFLAG) $(OBJS) -o $@
 
 firmware.hex:	firmware.elf
