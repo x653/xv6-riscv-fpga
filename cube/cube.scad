@@ -16,20 +16,23 @@ schienen_l = cube_a - 2*boden_d;
 schienen_d = 2.4;
 schienen_a = 60;
 schienen_loch = 2;
+
+rand=1;
+
 $fn=32;
-item=0;
+item="all.stl";
 print(item);
- 
-module print(item=0){
-   if (item==1) front();
-   if (item==2) rear();
-   if (item==3) rip();
-   if (item==4) rip_center();
-   if (item==5) trayICE40();
-   if (item==6) tray32u4();
-   if (item==7) traySDCard();
-   if (item==8) trayThinker();
-   if (item==0){
+
+module print(item="all.stl"){
+   if (item=="front.stl") front();
+   if (item=="rear.stl") rear();
+   if (item=="rip.stl") rip();
+   if (item=="rip_center.stl") rip_center();
+   if (item=="trayICE40.stl") trayICE40();
+   if (item=="tray32u4.stl") tray32u4();
+   if (item=="traySDCard.stl") traySDCard();
+   if (item=="trayThinker.stl") trayThinker();
+   if (item=="all.stl"){
         translate([0,0,-100]) front();
         cool();
         translate([0,0,50])   rear();
@@ -81,7 +84,7 @@ module trayThinker(){
     cube([schienen_a-2*schienen_d,schienen_l,2],center=true);
     translate([0,-(schienen_l-2)/2,2])
     cube([40,2,2],center=true);
-    translate([0,0,1])
+    translate([0,-10,1])
     rotate(90)
     scale(0.3)
 import("thinker.stl", convexity = 5);
@@ -132,9 +135,9 @@ module rear(){
         holes();
     }
     translate([0,0,(cool_h+boden_h-boden_d)/2])
-        rahmen(cube_a,cube_i,boden_h-boden_d);
+        rahmen(cube_a,cube_i,boden_h-boden_d,rand);
     translate([0,0,(cool_h-rip_d)/2])
-        rahmen(cube_a-2*rip_l,cube_i,rip_d);
+        rahmen(cube_a-2*rip_l,cube_i,rip_d,0);
     
 
 }
@@ -156,9 +159,21 @@ module hole(){
 
 module bodenplatte(){
     difference(){
-        cube([cube_a,cube_a,boden_d],center=true);
+        cubebevel(cube_a,boden_d,rand);
         translate([0,22.5,(boden_d-1)/2])
             cube([52,47,1],center=true);
+        translate([cube_a/2,-cube_a/2,boden_d/2])
+            rotate([270,0,90])
+                bevel(cube_a,rand);
+        translate([cube_a/2,cube_a/2,boden_d/2])
+            rotate([270,0,180])
+                bevel(cube_a,rand);
+        translate([-cube_a/2,cube_a/2,boden_d/2])
+            rotate([270,0,270])
+                bevel(cube_a,rand);
+        translate([-cube_a/2,-cube_a/2,boden_d/2])
+            rotate([270,0,0])
+                bevel(cube_a,rand); 
     }
     for (a=[1.5:3:43.5])
     translate([0,a,boden_d/2-1])prism(50, 3, 1);
@@ -168,10 +183,10 @@ module bodenplatte(){
 module front(){
     //
     translate([0,0,(-cube_a+boden_h+boden_d)/2])
-        rahmen(cube_a,cube_i,boden_h-boden_d);
+        rahmen(cube_a,cube_i,boden_h-boden_d,rand);
     translate([0,0,(-cool_h+rip_d)/2])
-        rahmen(cube_a-2*rip_l,cube_i,rip_d);
-    rahmen(cube_a-2*rip_b-0.2,cube_i,cube_a-2*boden_d);
+        rahmen(cube_a-2*rip_l,cube_i,rip_d,0);
+    rahmen(cube_a-2*rip_b-0.2,cube_i,cube_a-2*boden_d,rand);
     //Bodenplatte
     translate([0,0,(-cube_a+boden_d)/2])
             mirror([0,0,1])
@@ -226,28 +241,52 @@ module cool(){
 }
 
 module rip_center(){
-    rahmen(rip_a,rip_i,rip_d);
+    rahmen(rip_a,rip_i,rip_d,rand);
 }
 
 module rip(){
     rahmen(rip_a-2*rip_l,rip_i,rip_h);
      translate([0,0,(-rip_h+rip_d)/2])
-        rahmen(rip_a,rip_i,rip_d);
-    
+        rahmen(rip_a,rip_i,rip_d,rand);
 }
-module rahmen(aussen,innen,hoehe){
+
+module rahmen(aussen,innen,hoehe,rand){
     difference(){
-        cube([aussen,aussen,hoehe],center=true);
-        cube([innen,innen,hoehe],center=true);
+        cubebevel(aussen,hoehe,rand);
+        cube([innen,innen,hoehe],center=true);  
     }
 }
+
+module cubebevel(aussen,hoehe,rand){
+        difference(){
+        cube([aussen,aussen,hoehe],center=true);
+        translate([aussen/2,-aussen/2,-hoehe/2])
+            rotate([0,270,0])
+                bevel(hoehe,rand);
+        translate([aussen/2,aussen/2,-hoehe/2])
+            rotate([0,270,90])
+                bevel(hoehe,rand);
+        translate([-aussen/2,aussen/2,-hoehe/2])
+            rotate([0,270,180])
+                bevel(hoehe,rand);
+        translate([-aussen/2,-aussen/2,-hoehe/2])
+            rotate([0,270,270])
+                bevel(hoehe,rand);   
+    }
+}
+
 
  module prism(l, w, h){
       polyhedron(//pt 0        1        2        3        4        5
               points=[[-l/2,-w/2,0], [l/2,-w/2,0], [l/2,0,h], [-l/2,0,h], [-l/2,w/2,0], [l/2,w/2,0]],
               faces=[[0,1,2,3],[5,4,3,2],[0,4,5,1],[0,3,4],[5,2,1]]
-              );
-      
-      
+              );      
+      }
+  
+ module bevel(l, w){
+      polyhedron(//pt 0        1        2        3        4        5
+              points=[[0,0,0], [l,0,0], [l,0,w], [0,0,w], [0,w,0], [l,w,0]],
+              faces=[[0,1,2,3],[5,4,3,2],[0,4,5,1],[0,3,4],[5,2,1]]
+              );      
       }
   
