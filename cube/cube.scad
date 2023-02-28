@@ -20,8 +20,9 @@ schienen_loch = 2;
 rand=0.7;
 
 $fn=32;
-item="all.stl";
+item="front.stl";
 print(item);
+
 
 module print(item="all.stl"){
    if (item=="front.stl") front();
@@ -193,18 +194,8 @@ module bodenplatte(){
         cubebevel(cube_a,cube_a,boden_d,rand);
         translate([0,22.5,(boden_d-1)/2])
             cube([52,47,1],center=true);
-        translate([cube_a/2,-cube_a/2,boden_d/2])
-            rotate([270,0,90])
-                bevel(cube_a,rand);
-        translate([cube_a/2,cube_a/2,boden_d/2])
-            rotate([270,0,180])
-                bevel(cube_a,rand);
-        translate([-cube_a/2,cube_a/2,boden_d/2])
-            rotate([270,0,270])
-                bevel(cube_a,rand);
-        translate([-cube_a/2,-cube_a/2,boden_d/2])
-            rotate([270,0,0])
-                bevel(cube_a,rand);
+        
+    beveltop(cube_a,cube_a,boden_d,rand);
     }
     for (a=[1.5:3:43.5])
     translate([0,a,boden_d/2-1])prism(50, 3, 1);
@@ -215,9 +206,15 @@ module front(){
     //
     translate([0,0,(-cube_a+boden_h+boden_d)/2])
         rahmen(cube_a,cube_i,boden_h-boden_d,rand);
+            
     translate([0,0,(-cool_h+rip_d)/2])
+
         rahmen(cube_a-2*rip_l,cube_i,rip_d,0);
-    rahmen(cube_a-2*rip_b-0.2,cube_i,cube_a-2*boden_d,rand);
+    difference(){
+
+    rahmen(cube_a-2*rip_b,cube_i,cube_a-2*boden_d,rand);
+                beveltop(cube_a-2*rip_b,cube_a-2*rip_b,cube_a-2*boden_d,rand);
+        }
     //Bodenplatte
     translate([0,0,(-cube_a+boden_d)/2])
             mirror([0,0,1])
@@ -231,8 +228,7 @@ module front(){
                     cube([26,3,boden_d+4],center=true);
                     translate([0,35.5,-3])
                     cube([36,6,6],center=true);
-                    translate([0,-35,2])mirror([1,0,0])mirror([0,0,1])rotate(28)logo(5,0.5);
-
+                    translate([0,-37,2])mirror([1,0,0])mirror([0,0,1])rotate(28)logo(5,0.5);
                 }
     
     //rahmen halter
@@ -315,14 +311,29 @@ module prism2(l, w, h){
               );      
       }
  
- module prism(l, w, h){
+ module prism(l=1, w=1, h=1){
       polyhedron(//pt 0        1        2        3        4        5
               points=[[-l/2,-w/2,0], [l/2,-w/2,0], [l/2,0,h], [-l/2,0,h], [-l/2,w/2,0], [l/2,w/2,0]],
               faces=[[0,1,2,3],[5,4,3,2],[0,4,5,1],[0,3,4],[5,2,1]]
               );      
       }
   
- module bevel(l, w){
+ module beveltop(x,y,z,rand){
+    translate([x/2,-y/2,z/2])
+            rotate([270,0,90])
+                bevel(y,rand);
+        translate([x/2,y/2,z/2])
+            rotate([270,0,180])
+                bevel(x,rand);
+        translate([-x/2,y/2,z/2])
+            rotate([270,0,270])
+                bevel(y,rand);
+        translate([-x/2,-y/2,z/2])
+            rotate([270,0,0])
+                bevel(x,rand);
+}
+     
+ module bevel(l=10, w=1){
       polyhedron(//pt 0        1        2        3        4        5
               points=[[0,0,0], [l,0,0], [l,0,w], [0,0,w], [0,w,0], [l,w,0]],
               faces=[[0,1,2,3],[5,4,3,2],[0,4,5,1],[0,3,4],[5,2,1]]
