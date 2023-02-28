@@ -24,6 +24,7 @@ hardware.bin:	$(OBJS) pll.v top.v ice40hx8k_evb.pcf firmware.hex
 
 
 upload:			hardware.bin
+	$(TOOLPREFIX)iceprogduino -t 
 	$(TOOLPREFIX)iceprogduino hardware.bin
 
 run:	
