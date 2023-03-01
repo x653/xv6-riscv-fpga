@@ -1,0 +1,60 @@
+# pyhsical contraints file
+# iCE40HX8K-EVB board
+
+set_io clk J3		# clock 100 MHz
+
+set_io led[0] M12	# LED1
+set_io led[1] R16   # LED2
+
+set_io but[0] K11   # BUT1
+set_io but[1] P13   # BUT2
+
+set_io uart_tx T16  # UART-TX on UEXT connector
+set_io uart_rx L11  # UART-RX on UEXT connector
+
+# SRAM chip 512k byte organized as 256k * 16 bit.
+set_io sram_a[0] N6
+set_io sram_a[1] T1
+set_io sram_a[2] P4
+set_io sram_a[3] R2
+set_io sram_a[4] N5
+set_io sram_a[5] T2
+set_io sram_a[6] P5
+set_io sram_a[7] R3
+set_io sram_a[8] R5
+set_io sram_a[9] T3
+set_io sram_a[10] R4
+set_io sram_a[11] M7
+set_io sram_a[12] N7
+set_io sram_a[13] P6
+set_io sram_a[14] M8
+set_io sram_a[15] T5
+set_io sram_a[16] R6
+set_io sram_a[17] P8
+
+set_io sram_d[0] T8
+set_io sram_d[1] P7
+set_io sram_d[2] N9
+set_io sram_d[3] T9
+set_io sram_d[4] M9
+set_io sram_d[5] R9
+set_io sram_d[6] K9
+set_io sram_d[7] P9
+set_io sram_d[8] R10
+set_io sram_d[9] L10
+set_io sram_d[10] P10
+set_io sram_d[11] N10
+set_io sram_d[12] T10
+set_io sram_d[13] T11
+set_io sram_d[14] T15
+set_io sram_d[15] T14
+
+set_io sram_csn T6		# SRAM chip enabled not
+set_io sram_oen L9      # SRAM output enabled not
+set_io sram_wen T7      # SRAM write enabled not
+
+# SD CARD connected to JTAG connector
+set_io sd_miso R14      # TDI data in
+set_io sd_mosi P15      # TDO data out
+set_io sd_sck P14       # TCK serial clock
+set_io sd_ss R15        # TMS chip enabled not
