@@ -20,9 +20,19 @@ schienen_loch = 2;
 rand=0.7;
 
 $fn=32;
-item="front.stl";
+item="logo.stl";
 print(item);
+module logo1(){
 
+    difference(){
+    cubebevel(16,16,1.8,0.3);
+        translate([0.5,2,0.9])
+        rotate(28)
+        mirror([0,0,1])
+                logo(5,0.5);
+
+        }
+    }
 
 module print(item="all.stl"){
    if (item=="front.stl") front();
@@ -33,6 +43,7 @@ module print(item="all.stl"){
    if (item=="tray32u4.stl") tray32u4();
    if (item=="traySDCard.stl") traySDCard();
    if (item=="trayThinker.stl") trayThinker();
+   if (item=="logo.stl") logo1();
    if (item=="all.stl"){
         translate([0,0,-100]) front();
         cool();
