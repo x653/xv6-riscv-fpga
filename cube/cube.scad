@@ -30,7 +30,6 @@ cube_i = cube_a-2*rip_b-2*cube_d;
 item="all.stl";
 print(item);
 
-
 //Select the item to print
 module print(item="all.stl"){
    if (item=="front.stl") front();
@@ -64,7 +63,7 @@ module logo_plate(){
     
 //The cube logo with an X
 module logo(laenge){
-    dicke=laenge*0.1;
+    dicke=laenge*0.133;
     translate([0.05*laenge,0.2*laenge,0])rotate(28)
     union(){
         //The X
@@ -202,7 +201,7 @@ module front(){
             translate([0,34.5,-2]) cube([26,3,boden_d+4],center=true);
             translate([0,35.5,-3]) cube([36,6,6],center=true);
             //Logo
-            translate([0,-37,2])mirror([1,0,0])mirror([0,0,1])logo(6,0.6);
+            translate([0,-37,2])mirror([1,0,0])mirror([0,0,1])logo(6);
         }
     //rahmen halter
     four();
