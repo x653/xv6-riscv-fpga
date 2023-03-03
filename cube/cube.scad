@@ -151,15 +151,15 @@ module rear(){
     difference(){
         bodenplatte();
         holes();
-        translate([33,8.5,0])
+        translate([33,-8.5,0])
         cube([9,52,4],center=true);
         translate([-31,-30.5,0])
         cube([11,9,4],center=true);
         translate([-34.5,-15.5,0])
         cube([3,8,4],center=true);
-        translate([-34.3,-2,0])
+        translate([-34.3,-2.5,0])
         cube([4.5,9,4],center=true);
-        translate([-34.3,-2,1])
+        translate([-34.3,-2.5,1])
         cube([9,12.5,2],center=true);
     }
     
@@ -177,8 +177,8 @@ module holes(){
 module hole(){
     translate([schienen_a/2,(cube_i-2*schienen_d)/2,0])
         cylinder(boden_d,schienen_loch/2,rear_loch/2,center=true); 
-    translate([schienen_a/2,(cube_i-2*schienen_d)/2,boden_d/4])
-        cylinder(3*boden_d/4,schienen_loch,rear_loch,center=true);
+    translate([schienen_a/2,(cube_i-2*schienen_d)/2,0.75])
+        cylinder(2.5,schienen_loch,rear_loch,center=true);
 }
 
 //Die Bodenplatte für rear und front
