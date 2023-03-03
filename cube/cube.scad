@@ -12,6 +12,7 @@ rip_l = 2;          //Rippen Länge
 schienen_d = 2.4;               //Dicke der Schienen
 schienen_a = 60;                //Abstand der Schienen
 schienen_loch = 2.4;            //Lochdurchmesser       
+rear_loch = 3;            //Lochdurchmesser       
 
 rand=0.7;                       //Bevel
 
@@ -27,7 +28,7 @@ boden_h = (cube_a-cool_h)/2;
 cube_i = cube_a-2*rip_b-2*cube_d;
 
 //Was soll gezeigt werden?
-item="all.stl";
+item="rear.stl";
 print(item);
 
 //Select the item to print
@@ -67,8 +68,8 @@ module logo(laenge){
     translate([0.05*laenge,0.2*laenge,0])rotate(28)
     union(){
         //The X
-        rotate(52) prism2(2*laenge/3,3*dicke/4,3*dicke/4);
-        rotate(123) prism2(2*laenge/3,3*dicke/4,3*dicke/4);
+        rotate(90) prism3(0.6*laenge,dicke,dicke,1.3);
+        rotate(90) prism3(0.6*laenge,dicke,dicke,-1.3);
         
         //cube front
         translate([0,laenge/2,0]) prism2(laenge,dicke,dicke);
@@ -142,14 +143,26 @@ module nupsi(h,a,i){
 
 //rear part of cube
 module rear(){
-    translate([0,0,cube_a/2-boden_d/2])difference(){
-        bodenplatte();
-        holes();
-    }
     translate([0,0,(cool_h+boden_h-boden_d)/2])
         rahmen(cube_a,cube_i,boden_h-boden_d,rand);
     translate([0,0,(cool_h-rip_d)/2])
         rahmen(cube_a-2*rip_l,cube_i,rip_d,0);
+    translate([0,0,cube_a/2-boden_d/2])
+    difference(){
+        bodenplatte();
+        holes();
+        translate([33,8.5,0])
+        cube([9,52,4],center=true);
+        translate([-31,-30.5,0])
+        cube([11,9,4],center=true);
+        translate([-34.5,-15.5,0])
+        cube([3,8,4],center=true);
+        translate([-34.3,-2,0])
+        cube([4.5,9,4],center=true);
+        translate([-34.3,-2,1])
+        cube([9,12.5,2],center=true);
+    }
+    
 }
 
 //Four holes for rear part 
@@ -163,9 +176,9 @@ module holes(){
 //Single hole for the screw
 module hole(){
     translate([schienen_a/2,(cube_i-2*schienen_d)/2,0])
-        cylinder(boden_d,schienen_loch/2,schienen_loch/2,center=true); 
+        cylinder(boden_d,schienen_loch/2,rear_loch/2,center=true); 
     translate([schienen_a/2,(cube_i-2*schienen_d)/2,boden_d/4])
-        cylinder(boden_d/2,schienen_loch,schienen_loch,center=true);
+        cylinder(3*boden_d/4,schienen_loch,rear_loch,center=true);
 }
 
 //Die Bodenplatte für rear und front
@@ -278,6 +291,14 @@ module cubebevel(x,y,hoehe,rand){
             rotate([0,270,270])
                 bevel(hoehe,rand);   
     }
+}
+
+//Prism3
+module prism3(l, w, h,dx){
+      polyhedron(//pt 0        1        2        3        4        5
+              points=[[-(l+w)/2,-w/2-dx,0], [(l+w)/2,-w/2+dx,0], [l/2,dx,h], [-l/2,-dx,h], [-(l+w)/2,w/2-dx,0], [(l+w)/2,w/2+dx,0]],
+              faces=[[0,1,2,3],[5,4,3,2],[0,4,5,1],[0,3,4],[5,2,1]]
+      );      
 }
 
 //Prism2

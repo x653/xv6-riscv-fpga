@@ -15,7 +15,7 @@ build:	hardware.bin
 soc_tb.vcd:	$(OBJS) firmware.hex
 	$(TOOLPREFIX)iverilog -o soc_tb.out $(OBJS) soc_tb.v
 	./soc_tb.out
-	gtkwave soc_tb.vcd soc_tb.gtkw
+	$(TOOLPREFIX)gtkwave soc_tb.vcd soc_tb.gtkw
 
 hardware.bin:	$(OBJS) pll.v top.v ice40hx8k_evb.pcf firmware.hex
 	$(TOOLPREFIX)yosys -p "synth_ice40 -top top -json hardware.json" -q $(OBJS) pll.v top.v
