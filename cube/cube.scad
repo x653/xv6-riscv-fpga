@@ -28,7 +28,7 @@ boden_h = (cube_a-cool_h)/2;
 cube_i = cube_a-2*rip_b-2*cube_d;
 
 //Was soll gezeigt werden?
-item="rear.stl";
+item="all.stl";
 print(item);
 
 //Select the item to print
@@ -88,7 +88,7 @@ module logo(laenge){
 
 //Tray for the SD Card Reader
 module traySDCard(){
-    cubebevel(schienen_a-2*schienen_d,schienen_l,2,rand);
+    cubebevel(schienen_a-2*schienen_d-0.4,schienen_l,2,rand);
     translate([0,-(schienen_l-2)/2,2]) cube([40,2,2],center=true);
     
     translate([0,22.5,0])difference(){
@@ -108,14 +108,14 @@ module traySDCard(){
 
 //Tray with the Thinker
 module trayThinker(){
-    cubebevel(schienen_a-2*schienen_d,schienen_l,2,rand);
+    cubebevel(schienen_a-2*schienen_d-0.4,schienen_l,2,rand);
     translate([0,-(schienen_l-2)/2,2]) cube([40,2,2],center=true);
     translate([0,-10,1])rotate(90)scale(0.3)import("thinker.stl", convexity = 5);
 }
 
 //Tray for Olimexino 32u4
 module tray32u4(){
-    cubebevel(cube_i,schienen_l,2,rand);
+    cubebevel(cube_i-0.4,schienen_l,2,rand);
     translate([0,-(schienen_l-2)/2,2])cube([60,2,2],center=true);
     translate([-11,-42,1]) nupsi(5,6,2.4);
     translate([37,-42,1]) nupsi(5,6,2.4);
@@ -125,7 +125,7 @@ module tray32u4(){
 
 //Tray for the iCE40HX8K-EVB
 module trayICE40(){
-    cubebevel(cube_i,schienen_l,2,rand);
+    cubebevel(cube_i-0.4,schienen_l,2,rand);
     translate([0,-(schienen_l-2)/2,2]) cube([60,2,2],center=true);
     translate([-30.5,-23,1]) nupsi(3,6,2.4);
     translate([13.5,-23,1]) nupsi(3,6,2.4);
@@ -144,9 +144,9 @@ module nupsi(h,a,i){
 //rear part of cube
 module rear(){
     translate([0,0,(cool_h+boden_h-boden_d)/2])
-        rahmen(cube_a,cube_i,boden_h-boden_d,rand);
+        rahmen(cube_a,cube_i+2*cube_d,boden_h-boden_d,rand);
     translate([0,0,(cool_h-rip_d)/2])
-        rahmen(cube_a-2*rip_l,cube_i,rip_d,0);
+        rahmen(cube_a-2*rip_l,cube_i+2*cube_d,rip_d,0);
     translate([0,0,cube_a/2-boden_d/2])
     difference(){
         bodenplatte();
