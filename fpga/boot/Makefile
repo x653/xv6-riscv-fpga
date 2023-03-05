@@ -8,11 +8,11 @@ CC = $(TOOLPREFIX)gcc
 
 all:	firmware
 
-firmware.elf:	$(OBJS)
+firmware.elf:	$(OBJS) riscv.ld
 	$(CC) $(CFLAG) $(OBJS) -o $@
 
 firmware.hex:	firmware.elf
-	$(TOOLPREFIX)objcopy -j .mem firmware.elf -O binary firmware.bin
+	$(TOOLPREFIX)objcopy -j .boot firmware.elf -O binary firmware.bin
 	xxd -e firmware.bin | cut -c 11-46 > firmware.hex
 
 %.obj:  %.elf

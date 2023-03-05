@@ -7,7 +7,7 @@ MEMORY {
 }
 
 SECTIONS {
-	.mem : {
+	.boot : {
 		_entry = .;
 		*(.text);
 		. = ALIGN(16);

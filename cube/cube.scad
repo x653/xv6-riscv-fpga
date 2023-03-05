@@ -28,7 +28,7 @@ boden_h = (cube_a-cool_h)/2;
 cube_i = cube_a-2*rip_b-2*cube_d;
 
 //Was soll gezeigt werden?
-item="all.stl";
+item="trayThinker.stl";
 print(item);
 
 //Select the item to print
@@ -91,18 +91,18 @@ module traySDCard(){
     cubebevel(schienen_a-2*schienen_d-0.4,schienen_l,2,rand);
     translate([0,-(schienen_l-2)/2,2]) cube([40,2,2],center=true);
     
-    translate([0,22.5,0])difference(){
+    translate([0,18.5,0])difference(){
         union(){
-            translate([18,2,1]) cylinder(5,3,3);
-            translate([-18,2,1]) cylinder(5,3,3);
-            translate([0,0,1+9/2]) cube([38,35,9],center=true);
+            translate([18,4,1]) cylinder(5,3,3);
+            translate([-18,4,1]) cylinder(5,3,3);
+            translate([0,0,(2+9)/2]) cube([38,35,9],center=true);
         }
         translate([0,2,1+9/2]) cube([30,31,9],center=true);
-        translate([0,1,9]) cube([38,33,2],center=true);
-        translate([0,1,1+6]) cube([34,33,2],center=true);
-        translate([0,2,1+6]) cube([38,5,2],center=true);
-        translate([18,2,1]) cylinder(5,1.2,1.2);
-        translate([-18,2,1]) cylinder(5,1.2,1.2);
+        translate([0,2,9]) cube([38,31,2],center=true);
+        translate([0,2,1+6]) cube([34,31,2],center=true);
+        translate([0,4,1+6]) cube([38,5,2],center=true);
+        translate([18,4,1]) cylinder(5,1.2,1.2);
+        translate([-18,4,1]) cylinder(5,1.2,1.2);
     }
 }
 
@@ -110,7 +110,7 @@ module traySDCard(){
 module trayThinker(){
     cubebevel(schienen_a-2*schienen_d-0.4,schienen_l,2,rand);
     translate([0,-(schienen_l-2)/2,2]) cube([40,2,2],center=true);
-    translate([0,-10,1])rotate(90)scale(0.3)import("thinker.stl", convexity = 5);
+    translate([0,-10,1])rotate(90)scale(0.28)import("thinker.stl", convexity = 5);
 }
 
 //Tray for Olimexino 32u4
