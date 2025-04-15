@@ -88,6 +88,10 @@ void readpage(uint16_t adr);
 // FRAME:   <FEND><CMD>{data if any}<FCS(sume of all bytes = 0xFF)><FEND>
 // if FEND, FESC in data - <FEND>=<FESC><TFEND>;  <FESC>=<FESC><TFESC>
 
+void updateLED();
+void loopProg();
+void loopBridge();
+
 void setup() {
   // put your setup code here, to run once:
     // Power Up UEXT
@@ -105,6 +109,9 @@ void setup() {
    digitalWrite(RESET, HIGH);
    Serial.begin(230400);
    while (!Serial);
+
+Serial.write('0');
+// Serial1.write('1');
 
    isProg=false;
    HWB_INPUT;                   // Initialize HWB

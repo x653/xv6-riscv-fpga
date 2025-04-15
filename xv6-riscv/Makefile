@@ -30,34 +30,33 @@ OBJS = \
   $K/plic.o \
   $K/sdcard.o \
 
-# riscv64-unknown-elf- or riscv64-linux-gnu-
-# perhaps in /opt/riscv/bin
-TOOLPREFIX = /opt/riscv/bin/riscv64-unknown-elf-
-LIBGCC = /opt/riscv/lib/gcc/riscv64-unknown-elf/12.1.0/rv32i/ilp32
+TOOLPREFIX = riscv-none-elf-
+# LIBGCC = /opt/riscv/lib/gcc/riscv64-unknown-elf/12.1.0/rv32i/ilp32
+# LIBGCC = ~/Downloads/riscv32-elf-ubuntu-22.04-gcc-nightly-2025.01.20-nightly/riscv/lib/gcc/riscv32-unknown-elf/14.2.0/
+LIBGCC = /opt/riscv/lib/gcc/riscv32-unknown-elf/14.2.0/
 
 CC = $(TOOLPREFIX)gcc
 AS = $(TOOLPREFIX)gas
-LD = $(TOOLPREFIX)ld
 OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
 
-CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer #-ggdb -gdwarf-2
+CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer
 CFLAGS += -march=rv32ia_zicsr
 CFLAGS += -mabi=ilp32
 CFLAGS += -mcmodel=medany
-CFLAGS += -ffreestanding -nostdlib -mno-relax #-fno-common #-s
+CFLAGS += -ffreestanding -mno-relax
 CFLAGS += -I.
 
-LDFLAGS = -z max-page-size=4096 -melf32lriscv #-s
+LDFLAGS = -z max-page-size=4096 --freestanding -nostartfiles -Wl,--no-warn-rwx-segments
 
 $K/kernel: $(OBJS) $K/kernel.ld $U/initcode
-	$(LD) $(LDFLAGS) -T$K/kernel.ld -o $K/kernel $(OBJS) -L$(LIBGCC) -lgcc
+	$(CC) $(CFLAGS) -T$K/kernel.ld -o $K/kernel $(OBJS) $(LDFLAGS)
 	$(OBJDUMP) -S $K/kernel > $K/kernel.asm
 	$(OBJDUMP) -t $K/kernel | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $K/kernel.sym
 
 $U/initcode: $U/initcode.S
 	$(CC) $(CFLAGS) -nostdinc -I. -Ikernel -c $U/initcode.S -o $U/initcode.o
-	$(LD) $(LDFLAGS) -N -e start -Ttext 0 -o $U/initcode.out $U/initcode.o -L$(LIBGCC) #-lgcc
+	$(CC) $(LDFLAGS) -N -e start -Ttext 0 -o $U/initcode.out $U/initcode.o -L$(LIBGCC) #-lgcc
 	$(OBJCOPY) -S -O binary $U/initcode.out $U/initcode
 	$(OBJDUMP) -S $U/initcode.o > $U/initcode.asm
 
@@ -72,11 +71,11 @@ $K/trampoline.o:	$K/trampoline32.S
 	$(CC) $(CFLAGS) -c -o $K/trampoline.o $K/trampoline32.S
 $K/kernelvec.o:	$K/kernelvec32.S
 	$(CC) $(CFLAGS) -c -o $K/kernelvec.o $K/kernelvec32.S
-	
+
 ULIB = $U/ulib.o $U/usys.o $U/printf.o $U/umalloc.o
 
 _%: %.o $(ULIB)
-	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^ -L$(LIBGCC) -lgcc -s
+	$(CC) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^ -lgcc -s
 	$(OBJDUMP) -S $@ > $*.asm
 	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $*.sym
 
@@ -89,7 +88,7 @@ $U/usys.o : $U/usys.S
 $U/_forktest: $U/forktest.o $(ULIB)
 	# forktest has less library code linked in - needs to be small
 	# in order to be able to max out the proc table.
-	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $U/_forktest $U/forktest.o $U/ulib.o $U/usys.o  -L$(LIBGCC) #-lgcc
+	$(CC) $(CFLAGS) -N -e main -Ttext 0 -o $U/_forktest $U/forktest.o $U/ulib.o $U/usys.o $(LDFLAGS) #-lgcc
 	$(OBJDUMP) -S $U/_forktest > $U/forktest.asm
 
 mkfs/mkfs: mkfs/mkfs.c $K/fs.h
@@ -134,12 +133,12 @@ fs.img: mkfs/mkfs README $(UPROGS)
 
 -include kernel/*.d user/*.d
 
-clean: 
+clean:
 	rm -f *.tex *.dvi *.idx *.aux *.log *.ind *.ilg \
 	*/*.o */*.d */*.asm */*.sym \
 	$U/initcode $U/initcode.out $K/kernel xv6.elf fs.img \
 	mkfs/mkfs .gdbinit \
-        $U/usys.S \
+	$U/usys.S \
 	$(UPROGS)
 
 ifndef CPUS

@@ -1,6 +1,7 @@
 OBJS =  clint.v plic.v rv32.v soc.v spi.v sram.v uart.v vma.v
 
-TOOLPREFIX = /opt/oss-cad-suite/bin/
+# Downloaded from https://github.com/YosysHQ/oss-cad-suite-build/releases
+TOOLPREFIX = /home/aivashko/Downloads/oss-cad-suite-linux-x64-20250414/oss-cad-suite/bin/
 
 PNRFLAGS = --hx8k --package ct256 --pcf ice40hx8k_evb.pcf -q
 
@@ -22,16 +23,13 @@ hardware.bin:	$(OBJS) pll.v top.v ice40hx8k_evb.pcf firmware.hex
 
 
 upload:	hardware.bin
-	$(TOOLPREFIX)iceprogduino -t 
+	$(TOOLPREFIX)iceprogduino -t
 	$(TOOLPREFIX)iceprogduino hardware.bin
 
-run:	
+run:
 	tio -m INLCRNL /dev/ttyACM0
 
 clean:
 	rm -f *.asc *.bin *.json *.vcd *.out
 
 .PHONY: all clean
-
-
-

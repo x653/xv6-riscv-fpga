@@ -53,8 +53,8 @@ set_io sram_csn T6		# SRAM chip enabled not
 set_io sram_oen L9      # SRAM output enabled not
 set_io sram_wen T7      # SRAM write enabled not
 
-# SD CARD connected to JTAG connector
-set_io sd_miso R14      # TDI data in
-set_io sd_mosi P15      # TDO data out
-set_io sd_sck P14       # TCK serial clock
-set_io sd_ss R15        # TMS chip enabled not
+# SD CARD connected to Extension pins
+set_io sd_miso E4      # PIO3_00
+set_io sd_mosi B2      # PIO3_01
+set_io sd_sck F5       # PIO3_02
+set_io sd_ss B1        # PIO3_03

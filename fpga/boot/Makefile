@@ -1,10 +1,12 @@
-OBJS =  start.S main.c printf.c stdio.c spi.c 
+OBJS =  start.S main.c printf.c stdio.c spi.c
 
-TOOLPREFIX = /opt/riscv/bin/riscv64-unknown-elf-
+# Downloaded multilib from https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases
+# added bin/ therein to PATH
+TOOLPREFIX = riscv-none-elf-
 
-CFLAG = -Wall -O0 -march=rv32i -mabi=ilp32 --freestanding -nostartfiles -Triscv.ld -Wl,--no-warn-rwx-segments
+CFLAG = -Wall -O0 -march=rv32i_zicsr -mabi=ilp32 --freestanding -nostartfiles -Triscv.ld -Wl,--no-warn-rwx-segments
 
-CC = $(TOOLPREFIX)gcc 
+CC = $(TOOLPREFIX)gcc
 
 all:	firmware
 
@@ -17,7 +19,7 @@ firmware.hex:	firmware.elf
 
 %.obj:  %.elf
 	$(TOOLPREFIX)objdump -d $?
-	
+
 firmware:	firmware.hex
 
 	cp firmware.hex ../
